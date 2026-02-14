@@ -1,5 +1,8 @@
 export const computedStore = {
-  masterData: [],   // Final consolidated SKU dataset
-  months: [],       // Available months from Sales sheet
-  saleDaysMap: {}   // Month → Days
+  skuMap: {},            // Uniware SKU → SKU object
+  styleMap: {},          // Style ID → Style object (with children SKUs)
+  masterDataSKU: [],     // Array version of skuMap
+  masterDataStyle: [],   // Array version of styleMap
+  months: [],
+  saleDaysMap: {}
 };
