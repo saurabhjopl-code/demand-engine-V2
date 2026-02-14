@@ -9,37 +9,62 @@ export function buildDemand(selectedDays = 45) {
 
   Object.values(master.styles).forEach(style => {
 
-    const drr = style.drr;
-    const totalSales = style.totalSales;
-    const totalStock = style.totalStock;
-    const production = style.totalProduction || 0; // ✅ FIXED
+    const styleDRR = style.drr;
+    const styleStock = style.totalStock;
+    const styleProduction = style.totalProduction || 0;
 
-    const sc = drr > 0 ? totalStock / drr : 0;
+    const styleRequired = styleDRR * selectedDays;
 
-    const requiredDemand = drr * selectedDays;
+    let styleDirect = styleRequired - styleStock;
+    if (styleDirect < 0) styleDirect = 0;
 
-    let directDemand = requiredDemand - totalStock;
-    if (directDemand < 0) directDemand = 0;
+    let stylePending = styleDirect - styleProduction;
+    if (stylePending < 0) stylePending = 0;
 
-    let pending = directDemand - production;
-    if (pending < 0) pending = 0;
+    // Build SKU rows
+    const skuRows = Object.values(style.skus).map(sku => {
+
+      const skuDRR = sku.drr;
+      const skuStock = sku.totalStock;
+      const skuProduction = sku.production || 0;
+
+      const skuRequired = skuDRR * selectedDays;
+
+      let skuDirect = skuRequired - skuStock;
+      if (skuDirect < 0) skuDirect = 0;
+
+      let skuPending = skuDirect - skuProduction;
+      if (skuPending < 0) skuPending = 0;
+
+      return {
+        sku: sku.sku,
+        totalSales: sku.totalSales,
+        totalStock: skuStock,
+        drr: skuDRR,
+        sc: skuDRR > 0 ? skuStock / skuDRR : 0,
+        requiredDemand: skuRequired,
+        directDemand: skuDirect,
+        production: skuProduction,
+        pending: skuPending
+      };
+    });
 
     rows.push({
       styleId: style.styleId,
       category: style.category,
       remark: style.remark,
-      totalSales,
-      totalStock,
-      drr,
-      sc,
-      requiredDemand,
-      directDemand,
-      production,
-      pending
+      totalSales: style.totalSales,
+      totalStock: styleStock,
+      drr: styleDRR,
+      sc: styleDRR > 0 ? styleStock / styleDRR : 0,
+      requiredDemand: styleRequired,
+      directDemand: styleDirect,
+      production: styleProduction,
+      pending: stylePending,
+      skus: skuRows
     });
   });
 
-  // Sort by Total Sales high → low
   rows.sort((a, b) => b.totalSales - a.totalSales);
 
   computedStore.reports = computedStore.reports || {};
