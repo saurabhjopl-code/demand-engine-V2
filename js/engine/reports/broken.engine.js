@@ -1,77 +1,80 @@
+// js/engine/reports/broken.engine.js
+
 import { computedStore } from "../../store/computed.store.js";
+import { SIZE_SEQUENCE } from "../../config/constants.js";
 
-const SIZE_ORDER = [
-  "FS","XS","S","M","L","XL","XXL",
-  "3XL","4XL","5XL","6XL",
-  "7XL","8XL","9XL","10XL"
-];
+export function buildBrokenReport() {
 
-export function buildBroken() {
+  const result = [];
 
-  const master = computedStore.master;
-  if (!master) return;
+  const master = computedStore.master?.styles || {};
+  const sizeCountSheet = computedStore.raw?.sizeCount || [];
 
-  const rows = [];
+  for (const styleId in master) {
 
-  Object.values(master.styles).forEach(style => {
+    const style = master[styleId];
 
-    const sizeData = {};
-    let brokenCount = 0;
-    let healthyCount = 0;
+    if (!style) continue;
 
-    // Build size stock map
-    Object.values(style.skus).forEach(sku => {
+    const totalSizesRow = sizeCountSheet.find(r => r["Style ID"] === styleId);
+    const totalSizes = totalSizesRow ? Number(totalSizesRow["Size Count"]) : 0;
 
-      Object.entries(sku.sizes).forEach(([size, data]) => {
+    let brokenSizes = [];
+    let sellerTotalStock = 0;
 
-        if (!sizeData[size]) {
-          sizeData[size] = {
-            sales: 0,
-            stock: 0
-          };
-        }
+    for (const skuKey in style.skus) {
 
-        sizeData[size].sales += data.totalUnits || 0;
-        sizeData[size].stock += data.stock || 0;
-      });
+      const sku = style.skus[skuKey];
 
-    });
+      if (!sku || !sku.sizes) continue;
 
-    // Evaluate sizes
-    SIZE_ORDER.forEach(size => {
+      for (const size of SIZE_SEQUENCE) {
 
-      const stock = sizeData[size]?.stock || 0;
+        const sizeData = sku.sizes[size];
+        if (!sizeData) continue;
 
-      if (stock <= 5) {
-        if (stock > 0 || stock === 0) {
-          brokenCount++;
+        const sellerStock = Number(sizeData.sellerStock || 0);
+
+        sellerTotalStock += sellerStock;
+
+        if (sellerStock <= 5) {
+          if (!brokenSizes.includes(size)) {
+            brokenSizes.push(size);
+          }
         }
       }
-
-      if (stock > 5) {
-        healthyCount++;
-      }
-    });
-
-    // Style is broken only if mix exists
-    if (brokenCount > 0 && healthyCount > 0) {
-
-      rows.push({
-        styleId: style.styleId,
-        category: style.category,
-        remark: style.remark,
-        totalSales: style.totalSales,
-        totalStock: style.totalStock,
-        brokenCount,
-        healthyCount,
-        sizes: sizeData
-      });
     }
 
-  });
+    const brokenCount = brokenSizes.length;
 
-  // Sort by Total Sales High → Low
-  rows.sort((a, b) => b.totalSales - a.totalSales);
+    if (brokenCount === 0) continue; // hide healthy styles
 
-  computedStore.reports.broken = { rows };
+    const drr = Number(style.drr || 0);
+    const sc = drr > 0 ? sellerTotalStock / drr : 0;
+
+    let remark = "Good";
+
+    if (brokenCount > 5) {
+      remark = "Critical";
+    } else if (brokenCount >= 3) {
+      remark = "Warning";
+    }
+
+    result.push({
+      styleId,
+      totalSizes,
+      brokenCount,
+      brokenSizes: brokenSizes.join(", "),
+      totalSale: style.totalSales || 0,
+      totalStock: sellerTotalStock,
+      drr,
+      sc,
+      remark
+    });
+  }
+
+  // Sort by Total Sale DESC
+  result.sort((a, b) => b.totalSale - a.totalSale);
+
+  computedStore.reports.broken = result;
 }
