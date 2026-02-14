@@ -41,7 +41,7 @@ export function renderAllReports() {
         renderOverstock();
       }
       if (tabName === "size curve") {
-        buildSizeCurve(45);
+        buildSizeCurve(window.currentSizeCurveDays || 45);
         renderSizeCurve();
 }
 if (tabName === "broken") {
@@ -60,5 +60,6 @@ if (tabName === "broken") {
   buildDemand(45);
   renderDemand();
 }
+
 
 
