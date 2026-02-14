@@ -24,12 +24,15 @@ export function buildSizeCurve(selectedDays = 45) {
     const sizeSalesMap = {};
     let allocatedTotal = 0;
 
-    // 🔥 Correctly build sizeSalesMap
+    // 🔥 Correctly read size sales
     Object.values(style.skus).forEach(sku => {
 
-      Object.entries(sku.sizes).forEach(([size, unitsSold]) => {
+      Object.entries(sku.sizes).forEach(([size, data]) => {
 
-        sizeSalesMap[size] = (sizeSalesMap[size] || 0) + unitsSold;
+        const sizeSales = data.sales || 0;
+
+        sizeSalesMap[size] =
+          (sizeSalesMap[size] || 0) + sizeSales;
       });
 
     });
@@ -41,7 +44,7 @@ export function buildSizeCurve(selectedDays = 45) {
       SIZE_ORDER.forEach(size => {
 
         const sizeSales = sizeSalesMap[size] || 0;
-        const weight = sizeSales / totalSales;
+        const weight = totalSales > 0 ? sizeSales / totalSales : 0;
 
         const qty = Math.round(styleDemand * weight);
 
@@ -80,7 +83,7 @@ export function buildSizeCurve(selectedDays = 45) {
 
   });
 
-  // Sort by Total Sales High → Low
+  // Sort by total sales High → Low
   rows.sort((a, b) => b.totalSales - a.totalSales);
 
   computedStore.reports.sizeCurve = {
