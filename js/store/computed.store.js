@@ -1,8 +1,24 @@
 export const computedStore = {
-  skuMap: {},            // Uniware SKU → SKU object
-  styleMap: {},          // Style ID → Style object (with children SKUs)
-  masterDataSKU: [],     // Array version of skuMap
-  masterDataStyle: [],   // Array version of styleMap
+
+  // Master (never mutated)
+  masterDataSKU: [],
+  masterDataStyle: [],
+  skuMap: {},
+  styleMap: {},
   months: [],
-  saleDaysMap: {}
+  saleDaysMap: {},
+
+  // Filtered (used by summaries/reports)
+  filteredSKU: [],
+  filteredStyle: [],
+
+  // Filter State
+  filters: {
+    month: null,
+    fc: null,
+    category: null,
+    remark: null,
+    scBand: null,
+    search: ""
+  }
 };
