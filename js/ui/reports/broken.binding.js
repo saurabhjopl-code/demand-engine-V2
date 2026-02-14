@@ -1,11 +1,16 @@
 import { computedStore } from "../../store/computed.store.js";
 import { formatNumber } from "../../utils/formatter.js";
 import { getSCClass } from "../../utils/scBand.js";
+import { applyGlobalSearch } from "../../utils/search.utils.js";
 
 export function renderBroken() {
 
   const container = document.querySelector(".report-body");
-  const data = computedStore.reports?.broken || [];
+
+  let data = computedStore.reports?.broken || [];
+
+  // 🔎 APPLY GLOBAL SEARCH (Style ID only)
+  data = applyGlobalSearch(data, ["styleId"]);
 
   document.querySelector(".report-header").innerHTML = `
     Broken Report
@@ -52,11 +57,7 @@ export function renderBroken() {
     `;
   });
 
-  html += `
-        </tbody>
-      </table>
-    </div>
-  `;
+  html += `</tbody></table></div>`;
 
   container.innerHTML = html;
 }
