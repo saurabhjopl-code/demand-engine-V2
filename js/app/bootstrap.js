@@ -2,27 +2,18 @@ import { loadAllSheets } from "./lifecycle.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  console.log("Bootstrap loaded");
-
   const refreshBtn = document.querySelector(".btn-secondary");
 
-  if (!refreshBtn) {
-    console.error("Refresh button not found");
-    return;
-  }
-
   refreshBtn.addEventListener("click", async () => {
-    console.log("Refresh clicked");
-
     try {
       await loadAllSheets();
-      console.log("All sheets loaded successfully");
-    } catch (error) {
-      console.error("Loader Error:", error.message);
+      console.log("Data Reloaded Successfully");
+    } catch (err) {
+      console.error("Loader Error:", err.message);
     }
   });
 
-  // AUTO LOAD ON PAGE OPEN
+  // Auto load once
   loadAllSheets().catch(err => {
     console.error("Auto load failed:", err.message);
   });
