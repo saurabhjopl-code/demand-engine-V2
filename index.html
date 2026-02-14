@@ -31,118 +31,125 @@
     </div>
   </header>
 
-  <!-- ACTION / PROGRESS ROW -->
-  <section class="progress-section">
+  <!-- PAGE WRAPPER -->
+  <main class="page-content">
 
-  <div class="progress-bar-container">
-    <div class="progress-bar" style="width: 60%;"></div>
-  </div>
+    <!-- PROGRESS SECTION -->
+    <section class="progress-section">
 
-  <div class="progress-info-row">
-    <div class="progress-left">
-      <div>60% • Reading Sales (1/9)</div>
-      <div class="sheet-counts">
-        Sales: 0 | Stock: 0 | Style Status: 0 |
-        Sale Days: 0 | Size Count: 0 |
-        Production: 0 | Meter Calc: 0 |
-        Location: 0 | X Mark Up: 0
+      <div class="progress-bar-container">
+        <div class="progress-bar" style="width: 60%;"></div>
       </div>
-    </div>
 
-    <div class="refresh-container">
-      <button class="btn-secondary">Refresh</button>
-    </div>
-  </div>
+      <div class="progress-info-row">
+        <div class="progress-left">
+          <div>60% • Reading Sales (1/9)</div>
+          <div class="sheet-counts">
+            Sales: 0 | Stock: 0 | Style Status: 0 |
+            Sale Days: 0 | Size Count: 0 |
+            Production: 0 | Meter Calc: 0 |
+            Location: 0 | X Mark Up: 0
+          </div>
+        </div>
 
-</section>
+        <div class="refresh-container">
+          <button class="btn-secondary">Refresh</button>
+        </div>
+      </div>
 
+    </section>
 
-  <!-- FILTER ROW -->
-  <section class="filter-section">
-    <div class="filters-left">
-      <select><option>Month ▼</option></select>
-      <select><option>FC ▼</option></select>
-      <select><option>Category ▼</option></select>
-      <select><option>Remark ▼</option></select>
-      <select><option>SC Band ▼</option></select>
-    </div>
+    <!-- FILTER SECTION -->
+    <section class="filter-section">
+      <div class="filters-left">
+        <select><option>Month ▼</option></select>
+        <select><option>FC ▼</option></select>
+        <select><option>Category ▼</option></select>
+        <select><option>Remark ▼</option></select>
+        <select><option>SC Band ▼</option></select>
+      </div>
 
-    <div class="filters-right">
-      <input type="text" placeholder="Search..." />
-    </div>
-  </section>
+      <div class="filters-right">
+        <input type="text" placeholder="Search..." />
+      </div>
+    </section>
 
-  <!-- SUMMARY GRID -->
-  <section class="summary-grid">
+    <!-- SUMMARY GRID -->
+    <section class="summary-grid">
 
-    <div class="card summary-card">
-      <h3>Sale Details</h3>
-      <div class="placeholder-table"></div>
-    </div>
+      <div class="card summary-card">
+        <h3>Sale Details</h3>
+        <div class="placeholder-table"></div>
+      </div>
 
-    <div class="card summary-card">
-      <h3>Current FC Stock</h3>
-      <div class="placeholder-table"></div>
-    </div>
+      <div class="card summary-card">
+        <h3>Current FC Stock</h3>
+        <div class="placeholder-table"></div>
+      </div>
 
-    <div class="card summary-card">
-      <h3>SC Band Summary</h3>
-      <div class="placeholder-table"></div>
-    </div>
+      <div class="card summary-card">
+        <h3>SC Band Summary</h3>
+        <div class="placeholder-table"></div>
+      </div>
 
-    <div class="card summary-card">
-      <h3>Size-wise Analysis</h3>
-      <div class="placeholder-table"></div>
-    </div>
+      <div class="card summary-card">
+        <h3>Size-wise Analysis</h3>
+        <div class="placeholder-table"></div>
+      </div>
 
-    <div class="card summary-card">
-      <h3>Company Remark-wise Sale</h3>
-      <div class="placeholder-table"></div>
-    </div>
+      <div class="card summary-card">
+        <h3>Company Remark-wise Sale</h3>
+        <div class="placeholder-table"></div>
+      </div>
 
-    <div class="card summary-card">
-      <h3>Category-wise Sale</h3>
-      <div class="placeholder-table"></div>
-    </div>
+      <div class="card summary-card">
+        <h3>Category-wise Sale</h3>
+        <div class="placeholder-table"></div>
+      </div>
 
-  </section>
+    </section>
 
-  <!-- TABS -->
-  <section class="tabs-section">
-    <button class="tab active">Demand</button>
-    <button class="tab">Overstock</button>
-    <button class="tab">Size Curve</button>
-    <button class="tab">Broken</button>
-    <button class="tab">Hero</button>
-    <button class="tab">DW</button>
-  </section>
+    <!-- TABS -->
+    <section class="tabs-section">
+      <button class="tab active">Demand</button>
+      <button class="tab">Overstock</button>
+      <button class="tab">Size Curve</button>
+      <button class="tab">Broken</button>
+      <button class="tab">Hero</button>
+      <button class="tab">DW</button>
+    </section>
 
-  <!-- REPORT SECTION -->
-  <section class="report-section">
-    <div class="card report-card">
-      <h3>Demand Report</h3>
+    <!-- REPORT SECTION -->
+    <section class="report-section">
+      <div class="card report-card">
+        <h3>Demand Report</h3>
 
-      <table class="report-table">
-        <thead>
-          <tr>
-            <th>SKU</th>
-            <th>Sales</th>
-            <th>DRR</th>
-            <th>Stock</th>
-            <th>SC</th>
-            <th>Required</th>
-            <th>Direct</th>
-            <th>Pend</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td colspan="8" style="text-align:center;">Report Placeholder</td></tr>
-        </tbody>
-      </table>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Sales</th>
+              <th>DRR</th>
+              <th>Stock</th>
+              <th>SC</th>
+              <th>Required</th>
+              <th>Direct</th>
+              <th>Pend</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="8" style="text-align:center;">
+                Report Placeholder
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-    </div>
-  </section>
+      </div>
+    </section>
+
+  </main>
 
 </body>
 </html>
-
