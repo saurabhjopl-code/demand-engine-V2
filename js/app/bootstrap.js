@@ -1,25 +1,23 @@
 import { loadAllSheets } from "./lifecycle.js";
 import { buildMasterData } from "../engine/master.engine.js";
-import { applyFilters } from "../engine/filter.engine.js";
 import { initFilters } from "../ui/filter.binding.js";
 
 export async function bootstrapApp() {
 
   try {
 
-    // 1️⃣ Load raw data
+    // Load all sheets
     await loadAllSheets();
 
-    // 2️⃣ Build master dataset (all months default)
+    // Build master dataset (ALL DATA)
     buildMasterData(null);
 
-    // 3️⃣ Apply initial filters
-    applyFilters();
+    // Default = no filtering
+    window.computedStore.filteredSKU = window.computedStore.masterData;
 
-    // 4️⃣ Initialize filter bindings
+    // Init search binding only
     initFilters(renderAll);
 
-    // 5️⃣ Initial render
     renderAll();
 
   } catch (err) {
