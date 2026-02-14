@@ -7,6 +7,9 @@ import { buildOverstock } from "../engine/reports/overstock.engine.js";
 import { renderSizeCurve } from "./reports/sizeCurve.binding.js";
 import { buildSizeCurve } from "../engine/reports/sizeCurve.engine.js";
 
+import { renderBroken } from "./reports/broken.binding.js";
+import { buildBroken } from "../engine/reports/broken.engine.js";
+
 
 export function renderAllReports() {
 
@@ -41,9 +44,12 @@ export function renderAllReports() {
         buildSizeCurve(45);
         renderSizeCurve();
 }
+if (tabName === "broken") {
+  buildBroken();
+  renderBroken();
+}
 
       // Future reports can be added here:
-      // if (tabName === "broken") ...
       // if (tabName === "hero") ...
       // if (tabName === "dw") ...
     });
@@ -54,4 +60,5 @@ export function renderAllReports() {
   buildDemand(45);
   renderDemand();
 }
+
 
