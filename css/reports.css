@@ -9,7 +9,7 @@
   padding: 20px;
   display: flex;
   flex-direction: column;
-  height: 600px; /* Adjust height if needed */
+  height: 600px;
 }
 
 .report-header {
@@ -23,10 +23,15 @@
   overflow-y: auto;
 }
 
-/* Sticky Table Header */
+/* Sticky header ONLY inside report */
 .report-body table thead th {
   position: sticky;
   top: 0;
   background: #f1f5f9;
   z-index: 2;
+}
+
+/* Optional subtle row hover */
+.report-body table tbody tr:hover {
+  background-color: #f8fafc;
 }
