@@ -175,3 +175,25 @@
 .table-wrapper {
   overflow: auto;
 }
+
+/* ===== Hero / Broken Remark Colors ===== */
+
+.text-green {
+  color: #1f9d55;
+  font-weight: 600;
+}
+
+.text-orange {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.text-red {
+  color: #e3342f;
+  font-weight: 600;
+}
+
+.text-blue {
+  color: #2563eb;
+  font-weight: 600;
+}
