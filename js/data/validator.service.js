@@ -1,13 +1,20 @@
+function normalizeHeader(header) {
+  return header
+    .replace(/\u00A0/g, " ")      // remove non-breaking spaces
+    .replace(/\s+/g, " ")         // collapse multiple spaces
+    .trim()
+    .toLowerCase();
+}
+
 export function validateHeaders(actual, expected) {
 
-  // Normalize both arrays
-  const cleanActual = actual.map(h => h.trim());
-  const cleanExpected = expected.map(h => h.trim());
+  const normalizedActual = actual.map(h => normalizeHeader(h));
+  const normalizedExpected = expected.map(h => normalizeHeader(h));
 
-  // Check each expected header exists in actual
-  for (const header of cleanExpected) {
-    if (!cleanActual.includes(header)) {
-      console.error("Missing header:", header);
+  for (const expectedHeader of normalizedExpected) {
+    if (!normalizedActual.includes(expectedHeader)) {
+      console.error("Missing header:", expectedHeader);
+      console.error("Actual headers received:", normalizedActual);
       return false;
     }
   }
