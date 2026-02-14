@@ -1,0 +1,28 @@
+.progress-section {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+
+.progress-bar-container {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.4s ease;
+}
+
+.progress-info {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+.sheet-counts {
+  margin-top: 6px;
+  font-size: 12px;
+}
