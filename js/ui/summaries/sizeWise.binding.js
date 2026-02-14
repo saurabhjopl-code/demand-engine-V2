@@ -14,7 +14,9 @@ export function renderSizeWise() {
   const card = document.querySelectorAll(".card")[4];
   const body = card.querySelector(".card-body");
 
-  body.innerHTML = `
+  const rows = data.rows;
+
+  let html = `
     <table class="summary-table">
       <thead>
         <tr>
@@ -29,28 +31,73 @@ export function renderSizeWise() {
         </tr>
       </thead>
       <tbody>
-        ${data.rows.map(row => `
-          <tr>
-            <td>${row.size}</td>
-            <td>${row.category}</td>
-            <td>${formatNumber(row.units)}</td>
-            <td>${formatNumber(row.totalCategoryUnits)}</td>
-            <td>${formatPercent(row.sizeShare)}</td>
-            <td>${formatPercent(row.categoryShare)}</td>
-            <td>${formatNumber(row.stockUnits)}</td>
-            <td>${formatNumber(row.totalCategoryStock)}</td>
-          </tr>
-        `).join("")}
-        <tr class="grand-row">
-          <td colspan="2"><strong>Grand Total</strong></td>
-          <td><strong>${formatNumber(data.grandUnits)}</strong></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td><strong>${formatNumber(data.grandStock)}</strong></td>
-          <td></td>
-        </tr>
+  `;
+
+  let currentCategory = null;
+  let categoryRowCount = 0;
+
+  // Count rows per category
+  const categoryCounts = {};
+  rows.forEach(row => {
+    categoryCounts[row.category] =
+      (categoryCounts[row.category] || 0) + 1;
+  });
+
+  rows.forEach((row, index) => {
+
+    html += `<tr>`;
+
+    // Size column
+    html += `<td>${row.size}</td>`;
+
+    // If first row of category → show category cells with rowspan
+    if (row.category !== currentCategory) {
+
+      currentCategory = row.category;
+      categoryRowCount = categoryCounts[row.category];
+
+      html += `
+        <td rowspan="${categoryRowCount}">${row.category}</td>
+        <td>${formatNumber(row.units)}</td>
+        <td rowspan="${categoryRowCount}">
+          ${formatNumber(row.totalCategoryUnits)}
+        </td>
+        <td>${formatPercent(row.sizeShare)}</td>
+        <td rowspan="${categoryRowCount}">
+          ${formatPercent(row.categoryShare)}
+        </td>
+        <td>${formatNumber(row.stockUnits)}</td>
+        <td rowspan="${categoryRowCount}">
+          ${formatNumber(row.totalCategoryStock)}
+        </td>
+      `;
+
+    } else {
+
+      html += `
+        <td>${formatNumber(row.units)}</td>
+        <td>${formatPercent(row.sizeShare)}</td>
+        <td>${formatNumber(row.stockUnits)}</td>
+      `;
+    }
+
+    html += `</tr>`;
+  });
+
+  html += `
+    <tr class="grand-row">
+      <td colspan="2"><strong>Grand Total</strong></td>
+      <td><strong>${formatNumber(data.grandUnits)}</strong></td>
+      <td colspan="3"></td>
+      <td><strong>${formatNumber(data.grandStock)}</strong></td>
+      <td></td>
+    </tr>
+  `;
+
+  html += `
       </tbody>
     </table>
   `;
+
+  body.innerHTML = html;
 }
