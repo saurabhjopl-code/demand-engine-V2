@@ -59,3 +59,92 @@
   color: #12b76a;
   font-weight: 600;
 }
+
+/* ===== Broken Report Styling ===== */
+
+.report-table-wrapper {
+  max-height: 75vh;
+  overflow: auto;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.report-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f3f4f6;
+  z-index: 2;
+  text-align: center;
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.report-table tbody td {
+  text-align: center;
+  padding: 6px;
+  border-bottom: 1px solid #eee;
+}
+
+.report-table .left {
+  text-align: left;
+}
+
+.report-table .wrap {
+  white-space: normal;
+  max-width: 260px;
+}
+
+.report-table .style {
+  font-weight: 600;
+}
+
+/* Remark colors */
+.remark.good {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.remark.warning {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.remark.critical {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* SC Band colors */
+.sc-critical {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.sc-risk {
+  color: #f97316;
+  font-weight: 600;
+}
+
+.sc-healthy {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.sc-safe {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.sc-watch {
+  color: #a855f7;
+  font-weight: 600;
+}
+
+.sc-good {
+  color: #059669;
+  font-weight: 600;
+}
