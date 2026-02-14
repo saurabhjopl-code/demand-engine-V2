@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Demand Planning Engine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
+
+  <link rel="stylesheet" href="./css/reset.css" />
+  <link rel="stylesheet" href="./css/variables.css" />
+  <link rel="stylesheet" href="./css/layout.css" />
+  <link rel="stylesheet" href="./css/components.css" />
+  <link rel="stylesheet" href="./css/summaries.css" />
+  <link rel="stylesheet" href="./css/reports.css" />
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-left">
+    <img src="./assets/logo.png" class="logo" />
+  </div>
+
+  <div class="header-center">
+    Demand Planning Engine
+  </div>
+
+  <div class="header-right">
+    <button class="btn-primary">Export</button>
+  </div>
+</header>
+
+<section class="progress-section">
+  <div class="progress-left">
+    <div class="progress-bar">
+      <div class="progress-fill" style="width:100%"></div>
+    </div>
+
+    <div class="progress-stats">
+      Sales: 0 |
+      Stock: 0 |
+      Style Status: 0 |
+      Sale Days: 0 |
+      Size Count: 0 |
+      Production: 0 |
+      Meter Calc: 0 |
+      Location: 0 |
+      X Mark Up: 0
+    </div>
+  </div>
+
+  <div class="progress-right">
+    <input type="text" class="search-input" placeholder="Search Style / SKU..." />
+  </div>
+</section>
+
+<section class="summary-grid">
+
+  <div class="card">
+    <div class="card-title">Sale Details</div>
+    <div class="card-body"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Current FC Stock</div>
+    <div class="card-body"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">SC Band Summary</div>
+    <div class="card-body"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Size-wise Analysis</div>
+    <div class="card-body"></div>
+  </div>
+
+</section>
+
+<section class="tabs">
+  <button class="tab active">Demand</button>
+  <button class="tab">Overstock</button>
+  <button class="tab">Size Curve</button>
+  <button class="tab">Broken</button>
+  <button class="tab">Hero</button>
+  <button class="tab">DW</button>
+</section>
+
+<section class="report-section">
+  <div class="report-card">
+    <div class="report-header">
+      Demand Report
+    </div>
+    <div class="report-body">
+      <!-- Table will render here -->
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
