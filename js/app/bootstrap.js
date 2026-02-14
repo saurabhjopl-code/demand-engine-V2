@@ -1,46 +1,23 @@
 import { loadAllSheets } from "../data/lifecycle.js";
 import { buildMasterData } from "../engine/master.engine.js";
-import { computedStore } from "../store/computed.store.js";
-import { initMonthFilter } from "../ui/filter.controller.js";
+import { applyFilters } from "../engine/filter.engine.js";
+import { initFilters } from "../ui/filter.binding.js";
 
 export async function bootstrapApp() {
-  try {
-    console.log("Bootstrapping app...");
 
-    await loadAllSheets();
+  await loadAllSheets();
 
-    // Initial build (no month selected)
-    recomputeAppState(null);
+  buildMasterData(null);
+  applyFilters();
 
-    // Initialize month filter
-    initMonthFilter(onMonthChange);
+  initFilters(renderAll);
 
-  } catch (err) {
-    console.error("Auto load failed:", err.message);
-  }
-}
-
-function onMonthChange(selectedMonth) {
-  recomputeAppState(selectedMonth);
-}
-
-function recomputeAppState(selectedMonth) {
-
-  console.log("Recomputing App State for Month:", selectedMonth);
-
-  // Build master data with month
-  buildMasterData(selectedMonth);
-
-  // Store selected month
-  computedStore.selectedMonth = selectedMonth;
-
-  // Trigger global render
   renderAll();
 }
 
 function renderAll() {
-  // For now only logs.
-  // Next stage summaries will hook here.
-
-  console.log("Render triggered");
+  console.log("Filtered SKU Count:", 
+    document.readyState === "complete" ? 
+    window.computedStore?.filteredSKU?.length : ""
+  );
 }
