@@ -7,17 +7,19 @@ export async function bootstrapApp() {
 
   try {
 
+    // 1️⃣ Load raw data
     await loadAllSheets();
 
-    // Initial build (no month selected)
+    // 2️⃣ Build master dataset (all months default)
     buildMasterData(null);
 
-    // Initial filter pass
+    // 3️⃣ Apply initial filters
     applyFilters();
 
-    // Initialize filter bindings
+    // 4️⃣ Initialize filter bindings
     initFilters(renderAll);
 
+    // 5️⃣ Initial render
     renderAll();
 
   } catch (err) {
@@ -26,5 +28,8 @@ export async function bootstrapApp() {
 }
 
 function renderAll() {
-  console.log("Filtered SKU Count:", window?.computedStore?.filteredSKU?.length);
+  console.log(
+    "Filtered SKU Count:",
+    window?.computedStore?.filteredSKU?.length
+  );
 }
