@@ -1,6 +1,7 @@
 .progress-section {
   background: #fff;
   border-bottom: 1px solid var(--border);
+  padding: 14px 32px 10px 32px;
 }
 
 .progress-bar-container {
@@ -8,6 +9,7 @@
   background: #e5e7eb;
   border-radius: 6px;
   overflow: hidden;
+  margin-bottom: 8px;
 }
 
 .progress-bar {
@@ -16,13 +18,32 @@
   transition: width 0.4s ease;
 }
 
-.progress-info {
-  margin-top: 8px;
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progress-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   font-size: 13px;
   color: var(--text-light);
 }
 
 .sheet-counts {
-  margin-top: 6px;
   font-size: 12px;
+  color: var(--text-light);
+}
+
+.refresh-container {
+  display: flex;
+  align-items: center;
 }
