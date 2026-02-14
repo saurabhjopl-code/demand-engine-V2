@@ -1,0 +1,20 @@
+.report-section {
+  margin-top: 10px;
+}
+
+.report-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.report-header {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.report-body {
+  min-height: 200px;
+}
