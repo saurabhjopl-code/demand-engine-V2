@@ -18,3 +18,12 @@
 .report-body {
   min-height: 200px;
 }
+
+.style-row {
+  cursor: pointer;
+  background: #ffffff;
+}
+
+.sku-row {
+  background: #f9fafb;
+}
