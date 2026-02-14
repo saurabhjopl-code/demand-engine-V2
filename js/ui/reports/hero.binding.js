@@ -1,11 +1,11 @@
 import { computedStore } from "../../store/computed.store.js";
+import { applyGlobalSearch } from "../../utils/search.utils.js";
 
 export function renderHero() {
 
   const header = document.querySelector(".report-header");
   const body = document.querySelector(".report-body");
 
-  // FULL HEADER RESET
   header.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div>Hero Report</div>
@@ -15,10 +15,13 @@ export function renderHero() {
     </div>
   `;
 
-  const data = computedStore.hero || [];
+  let data = computedStore.hero || [];
+
+  // 🔎 APPLY SEARCH
+  data = applyGlobalSearch(data, ["style"]);
 
   if (!data.length) {
-    body.innerHTML = `<div style="padding:20px;">No Hero Data Found</div>`;
+    body.innerHTML = "<div style='padding:20px;'>No Hero Data</div>";
     return;
   }
 
@@ -32,7 +35,7 @@ export function renderHero() {
           <th colspan="3">Sale</th>
           <th colspan="3">Rank</th>
           <th colspan="3">DRR</th>
-          <th rowspan="2">SC (Seller)</th>
+          <th rowspan="2">SC</th>
           <th rowspan="2">Broken</th>
           <th rowspan="2">Remark</th>
         </tr>
@@ -47,12 +50,6 @@ export function renderHero() {
 
   data.forEach(row => {
 
-    const remarkClass =
-      row.remark === "Rank Improved" ? "text-green" :
-      row.remark === "Rank Dropped" ? "text-orange" :
-      row.remark === "DRR Dropped" ? "text-red" :
-      row.remark === "New Addition" ? "text-blue" : "";
-
     html += `
       <tr>
         <td>${row.style}</td>
@@ -63,12 +60,12 @@ export function renderHero() {
 
         <td>${row.sc}</td>
         <td>${row.broken}</td>
-        <td class="${remarkClass}">${row.remark || ""}</td>
+        <td>${row.remark || ""}</td>
       </tr>
     `;
   });
 
-  html += `</tbody></table>`;
+  html += "</tbody></table>";
 
   body.innerHTML = html;
 }
