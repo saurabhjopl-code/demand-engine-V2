@@ -4,6 +4,10 @@ import { renderOverstock } from "./reports/overstock.binding.js";
 import { buildDemand } from "../engine/reports/demand.engine.js";
 import { buildOverstock } from "../engine/reports/overstock.engine.js";
 
+import { renderSizeCurve } from "./reports/sizeCurve.binding.js";
+import { buildSizeCurve } from "../engine/reports/sizeCurve.engine.js";
+
+
 export function renderAllReports() {
 
   const tabs = document.querySelectorAll(".tab");
@@ -33,9 +37,12 @@ export function renderAllReports() {
         );
         renderOverstock();
       }
+      if (tabName === "size curve") {
+        buildSizeCurve(45);
+        renderSizeCurve();
+}
 
       // Future reports can be added here:
-      // if (tabName === "size curve") ...
       // if (tabName === "broken") ...
       // if (tabName === "hero") ...
       // if (tabName === "dw") ...
@@ -47,3 +54,4 @@ export function renderAllReports() {
   buildDemand(45);
   renderDemand();
 }
+
