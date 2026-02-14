@@ -6,10 +6,20 @@ function toNumber(val) {
   return isNaN(n) ? 0 : n;
 }
 
+function getSCBand(sc) {
+  if (sc < 30) return "Critical";
+  if (sc < 45) return "Risk";
+  if (sc < 60) return "Healthy";
+  if (sc < 90) return "Safe";
+  if (sc < 120) return "Watch";
+  return "Overstock";
+}
+
 export function buildMasterData(selectedMonth = null) {
 
   const sales = dataStore.sales || [];
   const stock = dataStore.stock || [];
+  const styleStatus = dataStore.styleStatus || [];
   const saleDays = dataStore.saleDays || [];
   const production = dataStore.production || [];
 
@@ -17,19 +27,23 @@ export function buildMasterData(selectedMonth = null) {
   const styleMap = {};
   const monthSet = new Set();
 
-  // ---------------------------------------
-  // 1️⃣ Sale Days Map
-  // ---------------------------------------
+  // ---------------- Sale Days ----------------
   const saleDaysMap = {};
   saleDays.forEach(row => {
     saleDaysMap[row["Month"]] = toNumber(row["Days"]);
   });
-
   computedStore.saleDaysMap = saleDaysMap;
 
-  // ---------------------------------------
-  // 2️⃣ Build SKU Base Structure
-  // ---------------------------------------
+  // ---------------- Style Info ----------------
+  const styleInfo = {};
+  styleStatus.forEach(row => {
+    styleInfo[row["Style ID"]] = {
+      category: row["Category"],
+      remark: row["Company Remark"]
+    };
+  });
+
+  // ---------------- Sales ----------------
   sales.forEach(row => {
 
     const month = row["Month"];
@@ -44,8 +58,11 @@ export function buildMasterData(selectedMonth = null) {
         uniwareSku: sku,
         styleId,
         monthSales: {},
-        stock: 0,
-        inProduction: 0
+        stockByFC: {},
+        totalStock: 0,
+        inProduction: 0,
+        category: styleInfo[styleId]?.category || "Unknown",
+        remark: styleInfo[styleId]?.remark || "Unknown"
       };
     }
 
@@ -56,49 +73,33 @@ export function buildMasterData(selectedMonth = null) {
     skuMap[sku].monthSales[month] += units;
   });
 
-  // ---------------------------------------
-  // 3️⃣ Add Stock
-  // ---------------------------------------
+  // ---------------- Stock (Multi FC) ----------------
   stock.forEach(row => {
     const sku = row["Uniware SKU"];
+    const fc = row["FC"];
     const units = toNumber(row["Units"]);
 
-    if (!skuMap[sku]) {
-      skuMap[sku] = {
-        uniwareSku: sku,
-        styleId: null,
-        monthSales: {},
-        stock: 0,
-        inProduction: 0
-      };
+    if (!skuMap[sku]) return;
+
+    if (!skuMap[sku].stockByFC[fc]) {
+      skuMap[sku].stockByFC[fc] = 0;
     }
 
-    skuMap[sku].stock += units;
+    skuMap[sku].stockByFC[fc] += units;
+    skuMap[sku].totalStock += units;
   });
 
-  // ---------------------------------------
-  // 4️⃣ Add Production
-  // ---------------------------------------
+  // ---------------- Production ----------------
   production.forEach(row => {
     const sku = row["Uniware SKU"];
     const units = toNumber(row["In Production"]);
 
-    if (!skuMap[sku]) {
-      skuMap[sku] = {
-        uniwareSku: sku,
-        styleId: null,
-        monthSales: {},
-        stock: 0,
-        inProduction: 0
-      };
-    }
+    if (!skuMap[sku]) return;
 
     skuMap[sku].inProduction += units;
   });
 
-  // ---------------------------------------
-  // 5️⃣ Compute SKU-Level Dynamic Metrics
-  // ---------------------------------------
+  // ---------------- SKU Calculations ----------------
   Object.values(skuMap).forEach(item => {
 
     let effectiveSales = 0;
@@ -108,89 +109,12 @@ export function buildMasterData(selectedMonth = null) {
       effectiveSales = item.monthSales[selectedMonth] || 0;
       totalDays = saleDaysMap[selectedMonth] || 0;
     } else {
-      effectiveSales = Object.values(item.monthSales)
-        .reduce((a, b) => a + b, 0);
-
-      totalDays = Object.values(saleDaysMap)
-        .reduce((a, b) => a + b, 0);
+      effectiveSales = Object.values(item.monthSales).reduce((a,b)=>a+b,0);
+      totalDays = Object.values(saleDaysMap).reduce((a,b)=>a+b,0);
     }
 
     const drr = totalDays > 0 ? effectiveSales / totalDays : 0;
-    const sc = drr > 0 ? Math.round(item.stock / drr) : 0;
-
-    const required45 = drr * 45;
-    const direct = Math.max(required45 - item.stock, 0);
-    const pend = Math.max(direct - item.inProduction, 0);
-
-    item.effectiveSales = effectiveSales;
-    item.drr = drr;
-    item.sc = sc;
-    item.required45 = required45;
-    item.direct = direct;
-    item.pend = pend;
-  });
-
-  // ---------------------------------------
-  // 6️⃣ Build Style Map
-  // ---------------------------------------
-  Object.values(skuMap).forEach(skuItem => {
-
-    const styleId = skuItem.styleId || "UNKNOWN";
-
-    if (!styleMap[styleId]) {
-      styleMap[styleId] = {
-        styleId,
-        children: [],
-        effectiveSales: 0,
-        stock: 0,
-        inProduction: 0,
-        drr: 0,
-        sc: 0,
-        direct: 0,
-        pend: 0
-      };
-    }
-
-    styleMap[styleId].children.push(skuItem);
-    styleMap[styleId].effectiveSales += skuItem.effectiveSales;
-    styleMap[styleId].stock += skuItem.stock;
-    styleMap[styleId].inProduction += skuItem.inProduction;
-    styleMap[styleId].direct += skuItem.direct;
-    styleMap[styleId].pend += skuItem.pend;
-  });
-
-  // ---------------------------------------
-  // 7️⃣ Style-Level DRR
-  // ---------------------------------------
-  Object.values(styleMap).forEach(styleItem => {
-
-    let totalDays = 0;
-
-    if (selectedMonth) {
-      totalDays = saleDaysMap[selectedMonth] || 0;
-    } else {
-      totalDays = Object.values(saleDaysMap)
-        .reduce((a, b) => a + b, 0);
-    }
-
-    const drr = totalDays > 0
-      ? styleItem.effectiveSales / totalDays
-      : 0;
-
-    const sc = drr > 0
-      ? Math.round(styleItem.stock / drr)
-      : 0;
-
-    styleItem.drr = drr;
-    styleItem.sc = sc;
-  });
-
-  computedStore.skuMap = skuMap;
-  computedStore.styleMap = styleMap;
-  computedStore.masterDataSKU = Object.values(skuMap);
-  computedStore.masterDataStyle = Object.values(styleMap);
-  computedStore.months = Array.from(monthSet);
-
-  console.log("SKU Count:", computedStore.masterDataSKU.length);
-  console.log("Style Count:", computedStore.masterDataStyle.length);
-}
+    const sc = drr > 0 ? Math.round(item.totalStock / drr) : 0;
+    const required = drr * 45;
+    const direct = Math.max(required - item.totalStock, 0);
+    const pend = Math.max(direct
