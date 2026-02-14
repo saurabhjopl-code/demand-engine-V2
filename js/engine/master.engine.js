@@ -117,4 +117,55 @@ export function buildMasterData(selectedMonth = null) {
     const sc = drr > 0 ? Math.round(item.totalStock / drr) : 0;
     const required = drr * 45;
     const direct = Math.max(required - item.totalStock, 0);
-    const pend = Math.max(direct
+    const pend = Math.max(direct - item.inProduction, 0);
+
+    item.effectiveSales = effectiveSales;
+    item.drr = drr;
+    item.sc = sc;
+    item.scBand = getSCBand(sc);
+    item.required = required;
+    item.direct = direct;
+    item.pend = pend;
+  });
+
+  // ---------------- Style Aggregation ----------------
+  Object.values(skuMap).forEach(skuItem => {
+
+    const styleId = skuItem.styleId;
+
+    if (!styleMap[styleId]) {
+      styleMap[styleId] = {
+        styleId,
+        category: skuItem.category,
+        remark: skuItem.remark,
+        children: [],
+        effectiveSales: 0,
+        totalStock: 0,
+        inProduction: 0
+      };
+    }
+
+    styleMap[styleId].children.push(skuItem);
+    styleMap[styleId].effectiveSales += skuItem.effectiveSales;
+    styleMap[styleId].totalStock += skuItem.totalStock;
+    styleMap[styleId].inProduction += skuItem.inProduction;
+  });
+
+  Object.values(styleMap).forEach(style => {
+
+    let totalDays = selectedMonth
+      ? saleDaysMap[selectedMonth] || 0
+      : Object.values(saleDaysMap).reduce((a,b)=>a+b,0);
+
+    const drr = totalDays > 0 ? style.effectiveSales / totalDays : 0;
+    const sc = drr > 0 ? Math.round(style.totalStock / drr) : 0;
+
+    style.drr = drr;
+    style.sc = sc;
+    style.scBand = getSCBand(sc);
+  });
+
+  computedStore.masterDataSKU = Object.values(skuMap);
+  computedStore.masterDataStyle = Object.values(styleMap);
+  computedStore.months = Array.from(monthSet);
+}
