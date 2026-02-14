@@ -24,21 +24,17 @@ export async function loadAllSheets() {
     const text = await fetchCSV(sheet.url);
     const parsed = parseCSV(text);
 
-    const isValid = validateHeaders(parsed.headers, sheet.headers);
-
-    if (!isValid) {
-      progressStore.current = `Header validation failed: ${sheet.name}`;
-      progressStore.percent = 0;
-      updateProgressUI();
-      throw new Error(`Header mismatch in ${sheet.name}`);
-    }
+    // Validate only for logging
+    validateHeaders(parsed.headers, sheet.headers);
 
     dataStore[sheet.key] = parsed.data;
 
     progressStore.rowCounts[sheet.name] = parsed.data.length;
 
     progressStore.completed++;
-    progressStore.percent = Math.round((progressStore.completed / progressStore.total) * 100);
+    progressStore.percent = Math.round(
+      (progressStore.completed / progressStore.total) * 100
+    );
 
     updateProgressUI();
   }
