@@ -4,8 +4,12 @@ import { parseCSV } from "../data/parser.service.js";
 import { dataStore } from "../store/data.store.js";
 
 import { buildCoreEngine } from "../engine/core.engine.js";
+
 import { buildAllSummaries } from "../engine/summary.index.js";
 import { renderAllSummaries } from "../ui/summary.index.js";
+
+import { buildAllReports } from "../engine/report.index.js";
+import { renderAllReports } from "../ui/report.index.js";
 
 async function loadAllSheets() {
 
@@ -20,8 +24,10 @@ async function loadAllSheets() {
     try {
       const text = await fetchCSV(SHEETS[key]);
       dataStore[key] = parseCSV(text);
+
       loaded++;
       progressFill.style.width = `${(loaded / total) * 100}%`;
+
     } catch (err) {
       console.error("Sheet failed:", key, err);
     }
@@ -47,11 +53,19 @@ async function bootstrap() {
 
     await loadAllSheets();
 
+    // CORE MASTER CONSOLIDATION
     buildCoreEngine();
+
+    // SUMMARIES
     buildAllSummaries();
     renderAllSummaries();
 
-    console.log("App Ready");
+    // REPORTS (Default 45D Demand)
+    buildAllReports();
+    renderAllReports();
+
+    console.log("Demand Planning Engine V2.5 Ready");
+
   } catch (err) {
     console.error("Bootstrap failed:", err);
   }
