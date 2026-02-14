@@ -148,3 +148,30 @@
   color: #059669;
   font-weight: 600;
 }
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.report-table th,
+.report-table td {
+  padding: 8px;
+  border: 1px solid #e2e2e2;
+  font-size: 13px;
+}
+
+.report-table thead {
+  background: #f4f6f9;
+  font-weight: 600;
+}
+
+.green { color: #1a9c42; font-weight: 600; }
+.red { color: #d12c2c; font-weight: 600; }
+.orange { color: #ff8c00; font-weight: 600; }
+.blue { color: #1f6fd1; font-weight: 600; }
+
+.table-wrapper {
+  overflow: auto;
+}
