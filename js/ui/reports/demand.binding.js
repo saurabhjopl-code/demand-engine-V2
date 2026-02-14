@@ -11,6 +11,15 @@ function formatDecimal(num) {
   return num.toFixed(2);
 }
 
+function getScClass(sc) {
+  if (sc < 30) return "sc-critical";
+  if (sc < 45) return "sc-risk";
+  if (sc < 60) return "sc-healthy";
+  if (sc < 90) return "sc-safe";
+  if (sc < 120) return "sc-watch";
+  return "sc-overstock";
+}
+
 export function renderDemand() {
 
   const reportBody = document.querySelector(".report-body");
@@ -60,9 +69,10 @@ export function renderDemand() {
   data.rows.forEach(row => {
 
     const isExpanded = expandedStyles.has(row.styleId);
+    const scClass = getScClass(row.sc);
 
     html += `
-      <tr class="style-row" data-style="${row.styleId}">
+      <tr class="style-row ${scClass}" data-style="${row.styleId}">
         <td>${row.skus.length > 0 ? (isExpanded ? "▼" : "▶") : ""}</td>
         <td><strong>${row.styleId}</strong></td>
         <td>${row.category}</td>
@@ -105,19 +115,14 @@ export function renderDemand() {
 
   reportBody.innerHTML = html;
 
-  // Expand toggle
   document.querySelectorAll(".style-row").forEach(row => {
-
     row.addEventListener("click", () => {
-
       const styleId = row.dataset.style;
-
       if (expandedStyles.has(styleId)) {
         expandedStyles.delete(styleId);
       } else {
         expandedStyles.add(styleId);
       }
-
       renderDemand();
     });
   });
@@ -125,7 +130,6 @@ export function renderDemand() {
   document
     .getElementById("scDaySelector")
     .addEventListener("change", (e) => {
-
       const days = Number(e.target.value);
       buildDemand(days);
       renderDemand();
