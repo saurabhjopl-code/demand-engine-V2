@@ -1,9 +1,9 @@
 // js/ui/reports/broken.binding.js
 
 import { computedStore } from "../../store/computed.store.js";
-import { formatNumber } from "../../utils/formatter.js";
+import { formatNumber, formatDecimal } from "../../utils/formatter.js";
 
-export function renderBrokenReport() {
+export function renderBroken() {
 
   const container = document.querySelector(".report-body");
   const data = computedStore.reports.broken || [];
@@ -46,8 +46,8 @@ export function renderBrokenReport() {
         <td>${row.brokenSizes}</td>
         <td class="right">${formatNumber(row.totalSale)}</td>
         <td class="right">${formatNumber(row.totalStock)}</td>
-        <td class="right">${row.drr.toFixed(2)}</td>
-        <td class="right">${row.sc.toFixed(1)}</td>
+        <td class="right">${formatDecimal(row.drr, 2)}</td>
+        <td class="right">${formatDecimal(row.sc, 1)}</td>
         <td class="${remarkClass}">${row.remark}</td>
       </tr>
     `;
