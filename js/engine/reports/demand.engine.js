@@ -1,5 +1,11 @@
 import { computedStore } from "../../store/computed.store.js";
 
+const SIZE_ORDER = [
+  "FS","XS","S","M","L","XL","XXL",
+  "3XL","4XL","5XL","6XL",
+  "7XL","8XL","9XL","10XL"
+];
+
 export function buildDemand(selectedDays = 45) {
 
   const master = computedStore.master;
@@ -21,33 +27,41 @@ export function buildDemand(selectedDays = 45) {
     let stylePending = styleDirect - styleProduction;
     if (stylePending < 0) stylePending = 0;
 
-    // Build SKU rows
-    const skuRows = Object.values(style.skus).map(sku => {
+    // 🔥 Build & Sort SKU Rows by Size Order
+    const skuRows = Object.values(style.skus)
+      .sort((a, b) => {
 
-      const skuDRR = sku.drr;
-      const skuStock = sku.totalStock;
-      const skuProduction = sku.production || 0;
+        const sizeA = Object.keys(a.sizes)[0] || "";
+        const sizeB = Object.keys(b.sizes)[0] || "";
 
-      const skuRequired = skuDRR * selectedDays;
+        return SIZE_ORDER.indexOf(sizeA) - SIZE_ORDER.indexOf(sizeB);
+      })
+      .map(sku => {
 
-      let skuDirect = skuRequired - skuStock;
-      if (skuDirect < 0) skuDirect = 0;
+        const skuDRR = sku.drr;
+        const skuStock = sku.totalStock;
+        const skuProduction = sku.production || 0;
 
-      let skuPending = skuDirect - skuProduction;
-      if (skuPending < 0) skuPending = 0;
+        const skuRequired = skuDRR * selectedDays;
 
-      return {
-        sku: sku.sku,
-        totalSales: sku.totalSales,
-        totalStock: skuStock,
-        drr: skuDRR,
-        sc: skuDRR > 0 ? skuStock / skuDRR : 0,
-        requiredDemand: skuRequired,
-        directDemand: skuDirect,
-        production: skuProduction,
-        pending: skuPending
-      };
-    });
+        let skuDirect = skuRequired - skuStock;
+        if (skuDirect < 0) skuDirect = 0;
+
+        let skuPending = skuDirect - skuProduction;
+        if (skuPending < 0) skuPending = 0;
+
+        return {
+          sku: sku.sku,
+          totalSales: sku.totalSales,
+          totalStock: skuStock,
+          drr: skuDRR,
+          sc: skuDRR > 0 ? skuStock / skuDRR : 0,
+          requiredDemand: skuRequired,
+          directDemand: skuDirect,
+          production: skuProduction,
+          pending: skuPending
+        };
+      });
 
     rows.push({
       styleId: style.styleId,
@@ -65,6 +79,7 @@ export function buildDemand(selectedDays = 45) {
     });
   });
 
+  // Sort Styles by Total Sales (High → Low)
   rows.sort((a, b) => b.totalSales - a.totalSales);
 
   computedStore.reports = computedStore.reports || {};
