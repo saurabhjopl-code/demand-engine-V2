@@ -4,12 +4,25 @@ import { parseCSV } from "../data/parser.service.js";
 import { dataStore } from "../store/data.store.js";
 
 import { buildCoreEngine } from "../engine/core.engine.js";
-
 import { buildAllSummaries } from "../engine/summary.index.js";
 import { renderAllSummaries } from "../ui/summary.index.js";
-
-import { buildAllReports } from "../engine/report.index.js";
 import { renderAllReports } from "../ui/report.index.js";
+
+window.globalSearchTerm = "";
+
+function wireGlobalSearch() {
+
+  const input = document.querySelector(".search-input");
+
+  input.addEventListener("input", (e) => {
+
+    window.globalSearchTerm = e.target.value;
+
+    // Re-render active tab
+    const activeTab = document.querySelector(".tab.active");
+    if (activeTab) activeTab.click();
+  });
+}
 
 async function loadAllSheets() {
 
@@ -24,16 +37,13 @@ async function loadAllSheets() {
     try {
       const text = await fetchCSV(SHEETS[key]);
       dataStore[key] = parseCSV(text);
-
       loaded++;
       progressFill.style.width = `${(loaded / total) * 100}%`;
-
     } catch (err) {
       console.error("Sheet failed:", key, err);
     }
   }
 
-  // Populate stats row
   progressStats.innerHTML = `
     Sales: ${dataStore.sales.length} |
     Stock: ${dataStore.stock.length} |
@@ -53,19 +63,14 @@ async function bootstrap() {
 
     await loadAllSheets();
 
-    // CORE MASTER CONSOLIDATION
     buildCoreEngine();
-
-    // SUMMARIES
     buildAllSummaries();
     renderAllSummaries();
-
-    // REPORTS (Default 45D Demand)
-    buildAllReports();
     renderAllReports();
 
-    console.log("Demand Planning Engine V2.5 Ready");
+    wireGlobalSearch();
 
+    console.log("App Ready");
   } catch (err) {
     console.error("Bootstrap failed:", err);
   }
