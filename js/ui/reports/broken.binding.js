@@ -1,61 +1,61 @@
-// js/ui/reports/broken.binding.js
-
 import { computedStore } from "../../store/computed.store.js";
-import { formatNumber, formatDecimal } from "../../utils/formatter.js";
+import { formatNumber } from "../../utils/formatter.js";
+import { getSCClass } from "../../utils/scBand.js";
 
 export function renderBroken() {
 
   const container = document.querySelector(".report-body");
-  const data = computedStore.reports.broken || [];
+  const data = computedStore.reports?.broken || [];
 
-  if (!data.length) {
-    container.innerHTML = "<div class='no-data'>No Broken Styles Found</div>";
+  document.querySelector(".report-header").innerHTML = `
+    Broken Report
+  `;
+
+  if (data.length === 0) {
+    container.innerHTML = `<div class="no-data">No Broken Styles Found</div>`;
     return;
   }
 
   let html = `
-    <table class="report-table">
-      <thead>
-        <tr>
-          <th>Style ID</th>
-          <th>Total Sizes</th>
-          <th>Broken Count</th>
-          <th>Broken Sizes</th>
-          <th>Total Sale</th>
-          <th>Total Stock</th>
-          <th>DRR</th>
-          <th>SC</th>
-          <th>Remark</th>
-        </tr>
-      </thead>
-      <tbody>
+    <div class="report-table-wrapper">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Style ID</th>
+            <th>Total Sizes</th>
+            <th>Broken Count</th>
+            <th class="left">Broken Sizes</th>
+            <th>Total Sale</th>
+            <th>Total Stock</th>
+            <th>DRR</th>
+            <th>SC</th>
+            <th>Remark</th>
+          </tr>
+        </thead>
+        <tbody>
   `;
 
   data.forEach(row => {
 
-    let remarkClass = "";
-    if (row.remark === "Critical") remarkClass = "remark-critical";
-    else if (row.remark === "Warning") remarkClass = "remark-warning";
-    else remarkClass = "remark-good";
-
     html += `
       <tr>
-        <td>${row.styleId}</td>
-        <td class="center">${row.totalSizes}</td>
-        <td class="center">${row.brokenCount}</td>
-        <td>${row.brokenSizes}</td>
-        <td class="right">${formatNumber(row.totalSale)}</td>
-        <td class="right">${formatNumber(row.totalStock)}</td>
-        <td class="right">${formatDecimal(row.drr, 2)}</td>
-        <td class="right">${formatDecimal(row.sc, 1)}</td>
-        <td class="${remarkClass}">${row.remark}</td>
+        <td class="style">${row.styleId}</td>
+        <td>${row.totalSizes}</td>
+        <td>${row.brokenCount}</td>
+        <td class="left wrap">${row.brokenSizes}</td>
+        <td>${formatNumber(row.totalSale)}</td>
+        <td>${formatNumber(row.totalStock)}</td>
+        <td>${row.drr.toFixed(2)}</td>
+        <td class="${getSCClass(row.sc)}">${row.sc.toFixed(1)}</td>
+        <td class="remark ${row.remark.toLowerCase()}">${row.remark}</td>
       </tr>
     `;
   });
 
   html += `
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
   `;
 
   container.innerHTML = html;
