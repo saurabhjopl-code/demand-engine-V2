@@ -1,52 +1,29 @@
 import { computedStore } from "../store/computed.store.js";
-import { buildMasterData } from "../engine/master.engine.js";
-import { applyFilters } from "../engine/filter.engine.js";
 
 /**
- * Initialize all filter bindings
- * This matches bootstrap.js import: initFilters
+ * Initialize ONLY Global Search
  */
 export function initFilters(reRenderCallback) {
 
-  const monthEl = document.getElementById("monthFilter");
   const searchEl = document.getElementById("globalSearch");
 
-  if (!monthEl || !searchEl) {
-    console.warn("Filter elements not found in DOM.");
+  if (!searchEl) {
+    console.warn("Search element not found in DOM.");
     return;
   }
 
-  // Populate Month Dropdown
-  monthEl.innerHTML = `<option value="">All Months</option>`;
-
-  (computedStore.months || []).forEach(m => {
-    const opt = document.createElement("option");
-    opt.value = m;
-    opt.textContent = m;
-    monthEl.appendChild(opt);
-  });
-
-  // Month Change
-  monthEl.addEventListener("change", (e) => {
-
-    const selectedMonth = e.target.value || null;
-
-    computedStore.filters.month = selectedMonth;
-
-    // Month requires full rebuild
-    buildMasterData(selectedMonth);
-
-    applyFilters();
-
-    reRenderCallback();
-  });
-
-  // Search Override Mode
   searchEl.addEventListener("input", (e) => {
 
-    computedStore.filters.search = e.target.value;
+    const query = e.target.value.trim().toLowerCase();
 
-    applyFilters();
+    if (!query) {
+      computedStore.filteredSKU = computedStore.masterData;
+    } else {
+      computedStore.filteredSKU = computedStore.masterData.filter(row =>
+        String(row.uniwareSku || "").toLowerCase().includes(query) ||
+        String(row.styleId || "").toLowerCase().includes(query)
+      );
+    }
 
     reRenderCallback();
   });
