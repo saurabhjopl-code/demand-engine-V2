@@ -14,6 +14,9 @@ export function buildSizeCurve(selectedDays = 45) {
   const rows = [];
 
   Object.values(master.styles).forEach(style => {
+if (style.styleId === "JOPLST218") {
+  console.log(style);
+}
 
     const totalSales = style.totalSales;
     const totalStock = style.totalStock;
@@ -91,3 +94,4 @@ export function buildSizeCurve(selectedDays = 45) {
     selectedDays
   };
 }
+
