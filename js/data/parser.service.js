@@ -1,5 +1,10 @@
 export function parseCSV(text) {
+
+  // Remove BOM if present
+  text = text.replace(/^\uFEFF/, "");
+
   const rows = text.trim().split("\n").map(r => r.split(","));
+
   const headers = rows.shift().map(h => h.trim());
 
   const data = rows.map(row => {
