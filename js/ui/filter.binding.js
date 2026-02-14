@@ -3,11 +3,10 @@ import { buildMasterData } from "../engine/master.engine.js";
 import { applyFilters } from "../engine/filter.engine.js";
 
 /**
- * Initializes all filter bindings
- * This matches lifecycle.js expected import:
- * initializeMonthFilter
+ * Initialize all filter bindings
+ * This matches bootstrap.js import: initFilters
  */
-export function initializeMonthFilter(reRenderCallback) {
+export function initFilters(reRenderCallback) {
 
   const monthEl = document.getElementById("monthFilter");
   const searchEl = document.getElementById("globalSearch");
@@ -34,7 +33,7 @@ export function initializeMonthFilter(reRenderCallback) {
 
     computedStore.filters.month = selectedMonth;
 
-    // Month requires full master rebuild
+    // Month requires full rebuild
     buildMasterData(selectedMonth);
 
     applyFilters();
@@ -42,7 +41,7 @@ export function initializeMonthFilter(reRenderCallback) {
     reRenderCallback();
   });
 
-  // Search (Override Mode)
+  // Search Override Mode
   searchEl.addEventListener("input", (e) => {
 
     computedStore.filters.search = e.target.value;
