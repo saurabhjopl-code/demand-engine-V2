@@ -3,9 +3,8 @@ import { computedStore } from "../../store/computed.store.js";
 
 export function buildFcStock() {
 
-  const master = computedStore.master;
-  if (!master) return;
-
+  const sales = dataStore.sales;
+  const stock = dataStore.stock;
   const saleDays = dataStore.saleDays;
 
   let totalDays = 0;
@@ -15,28 +14,36 @@ export function buildFcStock() {
 
   const fcMap = {};
 
-  Object.values(master.styles).forEach(style => {
+  // Aggregate Sales by FC
+  sales.forEach(row => {
 
-    Object.values(style.skus).forEach(sku => {
+    const fc = row["FC"];
+    const units = Number(row["Units"] || 0);
 
-      const fc = sku.sku.includes("FBA")
-        ? "FBA"
-        : sku.sku.includes("FBF")
-        ? "FBF"
-        : sku.sku.includes("SJIT")
-        ? "SJIT"
-        : "SELLER";
+    if (!fcMap[fc]) {
+      fcMap[fc] = {
+        totalStock: 0,
+        totalUnits: 0
+      };
+    }
 
-      if (!fcMap[fc]) {
-        fcMap[fc] = {
-          totalStock: 0,
-          totalUnits: 0
-        };
-      }
+    fcMap[fc].totalUnits += units;
+  });
 
-      fcMap[fc].totalStock += sku.totalStock;
-      fcMap[fc].totalUnits += sku.totalSales;
-    });
+  // Aggregate Stock by FC
+  stock.forEach(row => {
+
+    const fc = row["FC"];
+    const units = Number(row["Units"] || 0);
+
+    if (!fcMap[fc]) {
+      fcMap[fc] = {
+        totalStock: 0,
+        totalUnits: 0
+      };
+    }
+
+    fcMap[fc].totalStock += units;
   });
 
   let grandStock = 0;
