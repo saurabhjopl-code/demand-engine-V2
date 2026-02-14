@@ -5,6 +5,7 @@ import { validateHeaders } from "../data/validator.service.js";
 import { dataStore } from "../store/data.store.js";
 import { progressStore } from "../store/progress.store.js";
 import { updateProgressUI } from "../ui/progress.binding.js";
+import { buildMasterData } from "../engine/master.engine.js";
 
 export async function loadAllSheets() {
 
@@ -40,6 +41,8 @@ export async function loadAllSheets() {
 
   progressStore.current = "All Sheets Loaded Successfully";
   progressStore.percent = 100;
-
   updateProgressUI();
+
+  // 🔥 Build Master Dataset (default: no month filter)
+  buildMasterData(null);
 }

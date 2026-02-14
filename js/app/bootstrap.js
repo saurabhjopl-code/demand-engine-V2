@@ -1,33 +1,30 @@
 import { loadAllSheets } from "./lifecycle.js";
-import { buildMasterData } from "../engine/master.engine.js";
-import { initFilters } from "../ui/filter.binding.js";
 
-export async function bootstrapApp() {
+document.addEventListener("DOMContentLoaded", () => {
 
-  try {
+  console.log("Bootstrap loaded");
 
-    // Load all sheets
-    await loadAllSheets();
+  const refreshBtn = document.querySelector(".btn-secondary");
 
-    // Build master dataset (ALL DATA)
-    buildMasterData(null);
-
-    // Default = no filtering
-    window.computedStore.filteredSKU = window.computedStore.masterData;
-
-    // Init search binding only
-    initFilters(renderAll);
-
-    renderAll();
-
-  } catch (err) {
-    console.error("Bootstrap failed:", err);
+  if (!refreshBtn) {
+    console.error("Refresh button not found");
+    return;
   }
-}
 
-function renderAll() {
-  console.log(
-    "Filtered SKU Count:",
-    window?.computedStore?.filteredSKU?.length
-  );
-}
+  refreshBtn.addEventListener("click", async () => {
+    console.log("Refresh clicked");
+
+    try {
+      await loadAllSheets();
+      console.log("All sheets loaded successfully");
+    } catch (error) {
+      console.error("Loader Error:", error.message);
+    }
+  });
+
+  // AUTO LOAD ON PAGE OPEN
+  loadAllSheets().catch(err => {
+    console.error("Auto load failed:", err.message);
+  });
+
+});
