@@ -48,3 +48,10 @@
   background: var(--primary);
   color: white;
 }
+
+.sc-select {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  font-size: 13px;
+}
