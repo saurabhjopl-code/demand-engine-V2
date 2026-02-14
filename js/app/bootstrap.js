@@ -1,30 +1,38 @@
 import { loadAllSheets } from "./lifecycle.js";
+import { buildMasterData } from "../engine/master.engine.js";
+import { applySearch } from "../engine/search.engine.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+export async function bootstrapApp() {
 
-  console.log("Bootstrap loaded");
+  try {
 
-  const refreshBtn = document.querySelector(".btn-secondary");
+    await loadAllSheets();
 
-  if (!refreshBtn) {
-    console.error("Refresh button not found");
-    return;
+    // Build Master Dataset
+    buildMasterData(null);
+
+    // Initialize Search Only
+    initializeSearch(renderAll);
+
+    renderAll();
+
+  } catch (err) {
+    console.error("Bootstrap failed:", err);
   }
+}
 
-  refreshBtn.addEventListener("click", async () => {
-    console.log("Refresh clicked");
+function initializeSearch(reRenderCallback) {
 
-    try {
-      await loadAllSheets();
-      console.log("All sheets loaded successfully");
-    } catch (error) {
-      console.error("Loader Error:", error.message);
-    }
+  const searchEl = document.getElementById("globalSearch");
+
+  if (!searchEl) return;
+
+  searchEl.addEventListener("input", (e) => {
+    applySearch(e.target.value);
+    reRenderCallback();
   });
+}
 
-  // AUTO LOAD ON PAGE OPEN
-  loadAllSheets().catch(err => {
-    console.error("Auto load failed:", err.message);
-  });
-
-});
+function renderAll() {
+  console.log("Filtered SKU Count:", window?.computedStore?.filteredSKU?.length);
+}
