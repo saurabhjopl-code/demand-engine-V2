@@ -1,5 +1,6 @@
 import { computedStore } from "../../store/computed.store.js";
 import { buildSizeCurve } from "../../engine/reports/sizeCurve.engine.js";
+import { applyGlobalSearch } from "../../utils/search.utils.js";
 
 const SIZE_ORDER = [
   "FS","XS","S","M","L","XL","XXL",
@@ -34,7 +35,10 @@ export function renderSizeCurve() {
     </div>
   `;
 
-  const data = computedStore.reports.sizeCurve;
+  let data = computedStore.reports.sizeCurve;
+
+  // 🔎 FILTER STYLE LEVEL
+  const filteredRows = applyGlobalSearch(data.rows, ["styleId"]);
 
   let html = `
     <table class="summary-table">
@@ -48,13 +52,9 @@ export function renderSizeCurve() {
     html += `<th>${size}</th>`;
   });
 
-  html += `
-        </tr>
-      </thead>
-      <tbody>
-  `;
+  html += `</tr></thead><tbody>`;
 
-  data.rows.forEach(row => {
+  filteredRows.forEach(row => {
 
     html += `
       <tr>
@@ -70,11 +70,9 @@ export function renderSizeCurve() {
   });
 
   html += `</tbody></table>`;
-
   reportBody.innerHTML = html;
 
-  document
-    .getElementById("sizeCurveSelector")
+  document.getElementById("sizeCurveSelector")
     .addEventListener("change", (e) => {
       const value = Number(e.target.value);
       buildSizeCurve(value);
