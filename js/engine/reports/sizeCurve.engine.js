@@ -14,9 +14,6 @@ export function buildSizeCurve(selectedDays = 45) {
   const rows = [];
 
   Object.values(master.styles).forEach(style => {
-if (style.styleId === "JOPLST218") {
-  console.log(style);
-}
 
     const totalSales = style.totalSales;
     const totalStock = style.totalStock;
@@ -27,12 +24,12 @@ if (style.styleId === "JOPLST218") {
     const sizeSalesMap = {};
     let allocatedTotal = 0;
 
-    // 🔥 Correctly read size sales
+    // 🔥 CORRECT: use totalUnits
     Object.values(style.skus).forEach(sku => {
 
       Object.entries(sku.sizes).forEach(([size, data]) => {
 
-        const sizeSales = data.sales || 0;
+        const sizeSales = data.totalUnits || 0;
 
         sizeSalesMap[size] =
           (sizeSalesMap[size] || 0) + sizeSales;
@@ -94,4 +91,3 @@ if (style.styleId === "JOPLST218") {
     selectedDays
   };
 }
-
