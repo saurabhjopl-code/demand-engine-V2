@@ -5,27 +5,56 @@ import { dataStore } from "../store/data.store.js";
 
 import { buildCoreEngine } from "../engine/core.engine.js";
 import { buildAllSummaries } from "../engine/summary.index.js";
-
 import { renderAllSummaries } from "../ui/summary.index.js";
 
 async function loadAllSheets() {
 
+  const progressFill = document.querySelector(".progress-fill");
+  const progressStats = document.querySelector(".progress-stats");
+
+  let loaded = 0;
+  const total = Object.keys(SHEETS).length;
+
   for (const key in SHEETS) {
-    const text = await fetchCSV(SHEETS[key]);
-    dataStore[key] = parseCSV(text);
+
+    try {
+      const text = await fetchCSV(SHEETS[key]);
+      dataStore[key] = parseCSV(text);
+      loaded++;
+      progressFill.style.width = `${(loaded / total) * 100}%`;
+    } catch (err) {
+      console.error("Sheet failed:", key, err);
+    }
   }
+
+  // Populate stats row
+  progressStats.innerHTML = `
+    Sales: ${dataStore.sales.length} |
+    Stock: ${dataStore.stock.length} |
+    Style Status: ${dataStore.styleStatus.length} |
+    Sale Days: ${dataStore.saleDays.length} |
+    Size Count: ${dataStore.sizeCount.length} |
+    Production: ${dataStore.production.length} |
+    Meter Calc: ${dataStore.meterCalc.length} |
+    Location: ${dataStore.location.length} |
+    X Mark Up: ${dataStore.xMarkup.length}
+  `;
 }
 
 async function bootstrap() {
 
-  await loadAllSheets();
+  try {
 
-  buildCoreEngine();
-  buildAllSummaries();
+    await loadAllSheets();
 
-  renderAllSummaries();
+    buildCoreEngine();
+    buildAllSummaries();
+    renderAllSummaries();
 
-  console.log("App Ready");
+    console.log("App Ready");
+  } catch (err) {
+    console.error("Bootstrap failed:", err);
+  }
 }
 
 bootstrap();
