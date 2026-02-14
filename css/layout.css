@@ -28,12 +28,42 @@ body {
   font-weight: 600;
 }
 
-/* PROPER OFFSET USING WRAPPER */
+/* PAGE WRAPPER OFFSET */
 .page-content {
   padding-top: 64px;
 }
 
-/* SECTIONS */
+/* SECTION BASE SPACING */
 section {
   padding: 14px 32px;
+}
+
+/* ========================= */
+/* FILTER SECTION FIXED     */
+/* ========================= */
+
+.filter-section {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 12px 32px;
+
+  display: flex;
+  align-items: center;
+}
+
+/* LEFT FILTER GROUP */
+.filters-left {
+  display: flex;
+  gap: 10px;
+}
+
+/* RIGHT SEARCH - EXTREME RIGHT */
+.filters-right {
+  margin-left: auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filters-right input {
+  width: 260px;
 }
