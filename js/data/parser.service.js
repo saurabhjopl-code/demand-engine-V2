@@ -1,48 +1,26 @@
-function parseLine(line) {
-  const result = [];
-  let current = "";
-  let insideQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-
-    if (char === '"') {
-      insideQuotes = !insideQuotes;
-      continue;
-    }
-
-    if (char === "," && !insideQuotes) {
-      result.push(current.trim());
-      current = "";
-      continue;
-    }
-
-    current += char;
-  }
-
-  result.push(current.trim());
-  return result;
-}
-
 export function parseCSV(text) {
 
-  // Remove BOM
   text = text.replace(/^\uFEFF/, "");
 
   const lines = text.trim().split("\n");
 
-  const headers = parseLine(lines[0]);
+  // 🔍 DEBUG: Log raw header line
+  console.log("RAW HEADER LINE:", lines[0]);
+
+  // Simple split first to inspect
+  const rawSplit = lines[0].split(",");
+  console.log("RAW SPLIT RESULT:", rawSplit);
+
+  const headers = rawSplit.map(h => h.trim());
 
   const data = [];
 
   for (let i = 1; i < lines.length; i++) {
-    const values = parseLine(lines[i]);
-
+    const values = lines[i].split(",");
     const row = {};
     headers.forEach((h, index) => {
       row[h] = values[index] || "";
     });
-
     data.push(row);
   }
 
