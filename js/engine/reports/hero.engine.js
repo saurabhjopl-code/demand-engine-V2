@@ -1,11 +1,29 @@
 import { dataStore } from "../../store/data.store.js";
 import { computedStore } from "../../store/computed.store.js";
-import { getSellerStockByStyle } from "../../utils/stock.utils.js";
 import { SIZE_SEQUENCE } from "../../config/constants.js";
 
 function getLast3Months() {
   const months = [...new Set(dataStore.sales.map(r => r.Month))];
-  return months.sort().slice(-3); // DEC, JAN, FEB
+  return months.sort().slice(-3);
+}
+
+function getSellerStockByStyle(styleId) {
+
+  const sellerRows = dataStore.stock.filter(
+    r => r["Style ID"] === styleId && r.FC === "SELLER"
+  );
+
+  const sizeMap = {};
+
+  sellerRows.forEach(row => {
+    const size = row.Size;
+    const units = Number(row.Units || 0);
+
+    if (!sizeMap[size]) sizeMap[size] = 0;
+    sizeMap[size] += units;
+  });
+
+  return sizeMap;
 }
 
 function buildMonthlyRanking(month) {
@@ -93,9 +111,6 @@ export function buildHero() {
     const totalSellerStock = Object.values(sellerStock)
       .reduce((a, b) => a + b, 0);
 
-    const saleDaysRow = dataStore.saleDays.find(r => r.Month === m3);
-    const saleDays = saleDaysRow ? Number(saleDaysRow.Days || 1) : 1;
-
     const sc = feb ? (totalSellerStock / feb.drr) : 0;
 
     heroData.push({
@@ -126,6 +141,6 @@ export function buildHero() {
 
   heroData.sort((a, b) => a.latestRank - b.latestRank);
 
-  computedStore.hero = heroData.slice(0, 20); // show only top 20 latest
+  computedStore.hero = heroData.slice(0, 20);
 
 }
