@@ -7,23 +7,26 @@
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 600px; /* Adjust height if needed */
 }
 
 .report-header {
   font-size: 16px;
   font-weight: 600;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .report-body {
-  min-height: 200px;
+  flex: 1;
+  overflow-y: auto;
 }
 
-.style-row {
-  cursor: pointer;
-  background: #ffffff;
-}
-
-.sku-row {
-  background: #f9fafb;
+/* Sticky Table Header */
+.report-body table thead th {
+  position: sticky;
+  top: 0;
+  background: #f1f5f9;
+  z-index: 2;
 }
