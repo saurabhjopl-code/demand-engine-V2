@@ -1,0 +1,38 @@
+body {
+  background: var(--bg-page);
+  color: var(--text-dark);
+}
+
+/* HEADER */
+.app-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 64px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border);
+  z-index: 1000;
+}
+
+.app-header img {
+  height: 36px;
+}
+
+.header-center h1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* OFFSET BODY */
+body > *:not(.app-header) {
+  margin-top: 80px;
+}
+
+/* SECTIONS */
+section {
+  padding: 20px 32px;
+}
