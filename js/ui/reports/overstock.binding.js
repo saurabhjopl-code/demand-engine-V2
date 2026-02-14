@@ -1,5 +1,6 @@
 import { computedStore } from "../../store/computed.store.js";
 import { buildOverstock } from "../../engine/reports/overstock.engine.js";
+import { applyGlobalSearch } from "../../utils/search.utils.js";
 
 let expandedStyles = new Set();
 
@@ -34,7 +35,10 @@ export function renderOverstock() {
     </div>
   `;
 
-  const data = computedStore.reports.overstock;
+  let data = computedStore.reports.overstock;
+
+  // 🔎 FILTER STYLE LEVEL
+  const filteredRows = applyGlobalSearch(data.rows, ["styleId"]);
 
   let html = `
     <table class="summary-table">
@@ -54,7 +58,7 @@ export function renderOverstock() {
       <tbody>
   `;
 
-  data.rows.forEach(row => {
+  filteredRows.forEach(row => {
 
     const isExpanded = expandedStyles.has(row.styleId);
 
@@ -74,7 +78,9 @@ export function renderOverstock() {
 
     if (isExpanded) {
 
-      row.skus.forEach(sku => {
+      const filteredSkus = applyGlobalSearch(row.skus, ["sku"]);
+
+      filteredSkus.forEach(sku => {
 
         html += `
           <tr class="sku-row">
@@ -98,17 +104,14 @@ export function renderOverstock() {
   document.querySelectorAll(".style-row").forEach(row => {
     row.addEventListener("click", () => {
       const styleId = row.dataset.style;
-      if (expandedStyles.has(styleId)) {
-        expandedStyles.delete(styleId);
-      } else {
-        expandedStyles.add(styleId);
-      }
+      expandedStyles.has(styleId)
+        ? expandedStyles.delete(styleId)
+        : expandedStyles.add(styleId);
       renderOverstock();
     });
   });
 
-  document
-    .getElementById("overstockSelector")
+  document.getElementById("overstockSelector")
     .addEventListener("change", (e) => {
       const value = Number(e.target.value);
       buildOverstock(value);
