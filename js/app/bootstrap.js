@@ -36,29 +36,60 @@ async function loadAllSheets() {
   let loaded = 0;
   const total = Object.keys(SHEETS).length;
 
+  // Initialize stats structure
+  const sheetCounts = {
+    sales: 0,
+    stock: 0,
+    styleStatus: 0,
+    saleDays: 0,
+    sizeCount: 0,
+    production: 0,
+    meterCalc: 0,
+    location: 0,
+    xMarkup: 0
+  };
+
   for (const key in SHEETS) {
 
     try {
+
+      // Show currently loading sheet
+      progressStats.innerHTML = `Loading: ${key}...`;
+
       const text = await fetchCSV(SHEETS[key]);
-      dataStore[key] = parseCSV(text);
+      const parsed = parseCSV(text);
+
+      dataStore[key] = parsed;
+
+      sheetCounts[key] = parsed.length;
+
       loaded++;
-      progressFill.style.width = `${(loaded / total) * 100}%`;
+
+      const percent = Math.round((loaded / total) * 100);
+
+      progressFill.style.width = `${percent}%`;
+      progressFill.textContent = `${percent}%`;
+
+      // Update row counts LIVE
+      progressStats.innerHTML = `
+        Sales: ${sheetCounts.sales} |
+        Stock: ${sheetCounts.stock} |
+        Style Status: ${sheetCounts.styleStatus} |
+        Sale Days: ${sheetCounts.saleDays} |
+        Size Count: ${sheetCounts.sizeCount} |
+        Production: ${sheetCounts.production} |
+        Meter Calc: ${sheetCounts.meterCalc} |
+        Location: ${sheetCounts.location} |
+        X Mark Up: ${sheetCounts.xMarkup}
+      `;
+
     } catch (err) {
       console.error("Sheet failed:", key, err);
     }
   }
 
-  progressStats.innerHTML = `
-    Sales: ${dataStore.sales.length} |
-    Stock: ${dataStore.stock.length} |
-    Style Status: ${dataStore.styleStatus.length} |
-    Sale Days: ${dataStore.saleDays.length} |
-    Size Count: ${dataStore.sizeCount.length} |
-    Production: ${dataStore.production.length} |
-    Meter Calc: ${dataStore.meterCalc.length} |
-    Location: ${dataStore.location.length} |
-    X Mark Up: ${dataStore.xMarkup.length}
-  `;
+  // Smooth finish
+  progressStats.innerHTML += ` | ✔ All Sheets Loaded`;
 }
 
 async function bootstrap() {
