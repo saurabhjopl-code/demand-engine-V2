@@ -5,10 +5,8 @@ import { validateHeaders } from "../data/validator.service.js";
 import { dataStore } from "../store/data.store.js";
 import { progressStore } from "../store/progress.store.js";
 import { updateProgressUI } from "../ui/progress.binding.js";
-import { buildMasterData } from "../engine/master.engine.js";
-import { initFilters } from "../ui/filter.binding.js"; // ✅ FIXED IMPORT
 
-export async function loadAllSheets(reRenderCallback) {
+export async function loadAllSheets() {
 
   progressStore.total = SHEETS.length;
   progressStore.completed = 0;
@@ -42,15 +40,6 @@ export async function loadAllSheets(reRenderCallback) {
 
   progressStore.current = "All Sheets Loaded Successfully";
   progressStore.percent = 100;
+
   updateProgressUI();
-
-  // Build dataset (default all months)
-  buildMasterData(null);
-
-  // ✅ Initialize filters correctly
-  if (typeof reRenderCallback === "function") {
-    initFilters(reRenderCallback);
-  } else {
-    initFilters(() => {});
-  }
 }
