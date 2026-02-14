@@ -3,7 +3,7 @@
 import { computedStore } from "../../store/computed.store.js";
 import { SIZE_SEQUENCE } from "../../config/constants.js";
 
-export function buildBrokenReport() {
+export function buildBroken() {
 
   const result = [];
 
@@ -13,11 +13,15 @@ export function buildBrokenReport() {
   for (const styleId in master) {
 
     const style = master[styleId];
-
     if (!style) continue;
 
-    const totalSizesRow = sizeCountSheet.find(r => r["Style ID"] === styleId);
-    const totalSizes = totalSizesRow ? Number(totalSizesRow["Size Count"]) : 0;
+    const totalSizesRow = sizeCountSheet.find(
+      r => r["Style ID"] === styleId
+    );
+
+    const totalSizes = totalSizesRow
+      ? Number(totalSizesRow["Size Count"])
+      : 0;
 
     let brokenSizes = [];
     let sellerTotalStock = 0;
@@ -25,7 +29,6 @@ export function buildBrokenReport() {
     for (const skuKey in style.skus) {
 
       const sku = style.skus[skuKey];
-
       if (!sku || !sku.sizes) continue;
 
       for (const size of SIZE_SEQUENCE) {
@@ -47,7 +50,7 @@ export function buildBrokenReport() {
 
     const brokenCount = brokenSizes.length;
 
-    if (brokenCount === 0) continue; // hide healthy styles
+    if (brokenCount === 0) continue;
 
     const drr = Number(style.drr || 0);
     const sc = drr > 0 ? sellerTotalStock / drr : 0;
@@ -73,7 +76,6 @@ export function buildBrokenReport() {
     });
   }
 
-  // Sort by Total Sale DESC
   result.sort((a, b) => b.totalSale - a.totalSale);
 
   computedStore.reports.broken = result;
