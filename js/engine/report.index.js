@@ -1,5 +1,5 @@
-import { renderDemand } from "./reports/demand.binding.js";
+import { buildDemand } from "./reports/demand.engine.js";
 
-export function renderAllReports() {
-  renderDemand();
+export function buildAllReports() {
+  buildDemand(45);
 }
