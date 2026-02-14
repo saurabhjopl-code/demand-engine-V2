@@ -1,5 +1,6 @@
 // js/engine/reports/broken.engine.js
 
+import { dataStore } from "../../store/data.store.js";
 import { computedStore } from "../../store/computed.store.js";
 import { SIZE_SEQUENCE } from "../../config/constants.js";
 
@@ -8,10 +9,10 @@ export function buildBroken() {
   const result = [];
 
   const master = computedStore.master?.styles || {};
-  const stockRaw = computedStore.raw?.stock || [];
-  const sizeCountSheet = computedStore.raw?.sizeCount || [];
+  const stockRaw = dataStore.stock || [];
+  const sizeCountSheet = dataStore.sizeCount || [];
 
-  // Step 1: Build seller stock map → { styleId: { size: stock } }
+  // Build SELLER stock map
   const sellerMap = {};
 
   stockRaw.forEach(row => {
@@ -33,7 +34,7 @@ export function buildBroken() {
     sellerMap[styleId][size] += units;
   });
 
-  // Step 2: Evaluate each style
+  // Evaluate styles
   for (const styleId in sellerMap) {
 
     const styleSellerSizes = sellerMap[styleId];
@@ -50,6 +51,7 @@ export function buildBroken() {
 
       sellerTotalStock += sellerStock;
 
+      // 0–5 = broken
       if (sellerStock <= 5) {
         brokenSizes.push(size);
       }
@@ -91,7 +93,7 @@ export function buildBroken() {
     });
   }
 
-  // Sort by total sales DESC
+  // Sort by Total Sale DESC
   result.sort((a, b) => b.totalSale - a.totalSale);
 
   computedStore.reports.broken = result;
