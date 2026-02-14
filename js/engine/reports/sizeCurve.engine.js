@@ -21,25 +21,27 @@ export function buildSizeCurve(selectedDays = 45) {
 
     const styleDemand = Math.max((drr * selectedDays) - totalStock, 0);
 
-    const sizeAllocations = {};
+    const sizeSalesMap = {};
     let allocatedTotal = 0;
+
+    // 🔥 Correctly build sizeSalesMap
+    Object.values(style.skus).forEach(sku => {
+
+      Object.entries(sku.sizes).forEach(([size, unitsSold]) => {
+
+        sizeSalesMap[size] = (sizeSalesMap[size] || 0) + unitsSold;
+      });
+
+    });
+
+    const sizeAllocations = {};
 
     if (styleDemand > 0 && totalSales > 0) {
 
-      // Build size weight map
-      const sizeSalesMap = {};
-
-      Object.values(style.skus).forEach(sku => {
-        Object.entries(sku.sizes).forEach(([size, data]) => {
-          sizeSalesMap[size] = (sizeSalesMap[size] || 0) + data.sales;
-        });
-      });
-
-      // Allocation
       SIZE_ORDER.forEach(size => {
 
         const sizeSales = sizeSalesMap[size] || 0;
-        const weight = totalSales > 0 ? sizeSales / totalSales : 0;
+        const weight = sizeSales / totalSales;
 
         const qty = Math.round(styleDemand * weight);
 
@@ -47,12 +49,11 @@ export function buildSizeCurve(selectedDays = 45) {
         allocatedTotal += qty;
       });
 
-      // Rounding Adjustment
+      // 🔥 Rounding Adjustment
       const difference = Math.round(styleDemand) - allocatedTotal;
 
       if (difference !== 0) {
 
-        // Find largest sales size
         let maxSize = null;
         let maxSales = 0;
 
@@ -79,7 +80,7 @@ export function buildSizeCurve(selectedDays = 45) {
 
   });
 
-  // Sort by total sales high → low
+  // Sort by Total Sales High → Low
   rows.sort((a, b) => b.totalSales - a.totalSales);
 
   computedStore.reports.sizeCurve = {
