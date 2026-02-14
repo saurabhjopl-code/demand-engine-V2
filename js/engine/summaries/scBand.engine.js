@@ -5,19 +5,27 @@ export function buildScBand() {
   const master = computedStore.master;
   if (!master) return;
 
-  const bandCount = {
-    Critical: 0,
-    Risk: 0,
-    Healthy: 0,
-    Safe: 0,
-    Watch: 0,
-    Overstock: 0
+  const bandMap = {
+    "0–30": { count: 0, totalUnits: 0, totalStock: 0 },
+    "30–60": { count: 0, totalUnits: 0, totalStock: 0 },
+    "60–120": { count: 0, totalUnits: 0, totalStock: 0 },
+    "120+": { count: 0, totalUnits: 0, totalStock: 0 }
   };
 
   Object.values(master.styles).forEach(style => {
-    bandCount[style.scBand] =
-      (bandCount[style.scBand] || 0) + 1;
+
+    const sc = style.sc;
+    let band;
+
+    if (sc < 30) band = "0–30";
+    else if (sc < 60) band = "30–60";
+    else if (sc < 120) band = "60–120";
+    else band = "120+";
+
+    bandMap[band].count += 1;
+    bandMap[band].totalUnits += style.totalSales;
+    bandMap[band].totalStock += style.totalStock;
   });
 
-  computedStore.summaries.scBand = bandCount;
+  computedStore.summaries.scBand = bandMap;
 }
