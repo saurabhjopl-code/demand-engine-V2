@@ -6,6 +6,7 @@ import { dataStore } from "../store/data.store.js";
 import { progressStore } from "../store/progress.store.js";
 import { updateProgressUI } from "../ui/progress.binding.js";
 import { buildMasterData } from "../engine/master.engine.js";
+import { initializeMonthFilter } from "../ui/filter.binding.js";
 
 export async function loadAllSheets() {
 
@@ -43,6 +44,9 @@ export async function loadAllSheets() {
   progressStore.percent = 100;
   updateProgressUI();
 
-  // 🔥 Build Master Dataset (default: no month filter)
+  // Build dataset (default all months)
   buildMasterData(null);
+
+  // Initialize month filter after dataset built
+  initializeMonthFilter();
 }
