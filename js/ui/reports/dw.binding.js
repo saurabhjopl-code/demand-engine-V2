@@ -1,5 +1,6 @@
 import { computedStore } from "../../store/computed.store.js";
 import { formatNumber } from "../../utils/formatter.js";
+import { applyGlobalSearch } from "../../utils/search.utils.js";
 
 export function renderDW() {
 
@@ -15,7 +16,10 @@ export function renderDW() {
     </div>
   `;
 
-  const data = computedStore.dw || [];
+  let data = computedStore.dw || [];
+
+  // 🔎 APPLY GLOBAL SEARCH HERE
+  data = applyGlobalSearch(data, ["style"]);
 
   if (!data.length) {
     body.innerHTML = "<div style='padding:20px;'>No DW Data</div>";
