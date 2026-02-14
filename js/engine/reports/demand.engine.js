@@ -12,7 +12,7 @@ export function buildDemand(selectedDays = 45) {
     const drr = style.drr;
     const totalSales = style.totalSales;
     const totalStock = style.totalStock;
-    const production = style.production || 0;
+    const production = style.totalProduction || 0; // ✅ FIXED
 
     const sc = drr > 0 ? totalStock / drr : 0;
 
