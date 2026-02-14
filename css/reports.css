@@ -44,3 +44,18 @@
 .sc-safe { background-color: #e6f7ff; }
 .sc-watch { background-color: #eef2ff; }
 .sc-overstock { background-color: #f3e8ff; }
+
+.remark-critical {
+  color: #d92d20;
+  font-weight: 600;
+}
+
+.remark-warning {
+  color: #f79009;
+  font-weight: 600;
+}
+
+.remark-good {
+  color: #12b76a;
+  font-weight: 600;
+}
