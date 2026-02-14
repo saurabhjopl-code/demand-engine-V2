@@ -8,19 +8,23 @@ import { buildAllSummaries } from "../engine/summary.index.js";
 import { renderAllSummaries } from "../ui/summary.index.js";
 import { renderAllReports } from "../ui/report.index.js";
 
+import { exportAllReports } from "../utils/export.utils.js";
+
 window.globalSearchTerm = "";
 
 function wireGlobalSearch() {
-
   const input = document.querySelector(".search-input");
-
   input.addEventListener("input", (e) => {
-
     window.globalSearchTerm = e.target.value;
-
-    // Re-render active tab
     const activeTab = document.querySelector(".tab.active");
     if (activeTab) activeTab.click();
+  });
+}
+
+function wireExportButton() {
+  const btn = document.querySelector(".btn-primary");
+  btn.addEventListener("click", () => {
+    exportAllReports();
   });
 }
 
@@ -69,6 +73,7 @@ async function bootstrap() {
     renderAllReports();
 
     wireGlobalSearch();
+    wireExportButton();
 
     console.log("App Ready");
   } catch (err) {
