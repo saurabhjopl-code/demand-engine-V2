@@ -6,37 +6,44 @@ import { buildOverstock } from "../engine/reports/overstock.engine.js";
 
 export function renderAllReports() {
 
-  const tabs = document.querySelectorAll(".report-tab");
+  const tabs = document.querySelectorAll(".tab");
 
   tabs.forEach(tab => {
 
     tab.addEventListener("click", () => {
 
-      // Remove active from all
+      // Remove active from all tabs
       tabs.forEach(t => t.classList.remove("active"));
 
-      // Add active to clicked
+      // Activate clicked tab
       tab.classList.add("active");
 
-      const report = tab.dataset.report;
+      const tabName = tab.textContent.trim().toLowerCase();
 
-      if (report === "demand") {
+      if (tabName === "demand") {
         buildDemand(
           window.currentDemandDays || 45
         );
         renderDemand();
       }
 
-      if (report === "overstock") {
+      if (tabName === "overstock") {
         buildOverstock(
           window.currentOverstockThreshold || 90
         );
         renderOverstock();
       }
 
+      // Future reports can be added here:
+      // if (tabName === "size curve") ...
+      // if (tabName === "broken") ...
+      // if (tabName === "hero") ...
+      // if (tabName === "dw") ...
     });
+
   });
 
-  // Default render Demand
+  // Default load = Demand
+  buildDemand(45);
   renderDemand();
 }
