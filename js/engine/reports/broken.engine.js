@@ -10,8 +10,8 @@ export function buildBroken() {
   const stockRaw = dataStore.stock || [];
   const sizeCountSheet = dataStore.sizeCount || [];
 
-  // STEP 1: Build SELLER stock map (only >5 stock)
-  const sellerAvailable = {};
+  // STEP 1 — Build SELLER stock map (all sizes with units)
+  const sellerStockMap = {};
 
   stockRaw.forEach(row => {
 
@@ -21,23 +21,20 @@ export function buildBroken() {
     const size = row["Size"];
     const units = Number(row["Units"] || 0);
 
-    if (!SIZE_SEQUENCE.includes(size)) return; // Ignore FC, random text
+    if (!SIZE_SEQUENCE.includes(size)) return;
 
-    if (units > 5) {
-
-      if (!sellerAvailable[styleId]) {
-        sellerAvailable[styleId] = new Set();
-      }
-
-      sellerAvailable[styleId].add(size);
+    if (!sellerStockMap[styleId]) {
+      sellerStockMap[styleId] = {};
     }
+
+    sellerStockMap[styleId][size] = units;
   });
 
-  // STEP 2: Evaluate styles
+  // STEP 2 — Evaluate styles
   for (const styleId in master) {
 
     const styleMaster = master[styleId];
-    const availableSizes = sellerAvailable[styleId] || new Set();
+    const styleStock = sellerStockMap[styleId] || {};
 
     const sizeCountRow = sizeCountSheet.find(
       r => r["Style ID"] === styleId
@@ -46,39 +43,24 @@ export function buildBroken() {
     if (!sizeCountRow) continue;
 
     const totalSizes = Number(sizeCountRow["Size Count"] || 0);
-
     if (totalSizes === 0) continue;
 
-    const availableCount = availableSizes.size;
+    let brokenSizes = [];
 
-    const brokenCount = totalSizes - availableCount;
+    Object.entries(styleStock).forEach(([size, units]) => {
 
-    if (brokenCount <= 0) continue;
-
-    // Build broken size list
-    const brokenSizes = SIZE_SEQUENCE.filter(size => {
-
-      if (!availableSizes.has(size)) {
-
-        // Only count sizes that actually belong to style
-        // Avoid FS style mismatch
-        if (totalSizes === 1 && SIZE_SEQUENCE.includes("FS")) {
-          return size === "FS";
-        }
-
-        return true;
+      if (units <= 5) {
+        brokenSizes.push(size);
       }
-
-      return false;
     });
 
+    const brokenCount = brokenSizes.length;
+
+    if (brokenCount === 0) continue;
+
     // SELLER total stock
-    const sellerTotalStock = stockRaw
-      .filter(r =>
-        r["FC"] === "SELLER" &&
-        r["Style ID"] === styleId
-      )
-      .reduce((sum, r) => sum + Number(r["Units"] || 0), 0);
+    const sellerTotalStock = Object.values(styleStock)
+      .reduce((sum, units) => sum + Number(units || 0), 0);
 
     const drr = Number(styleMaster.drr || 0);
     const sc = drr > 0 ? sellerTotalStock / drr : 0;
@@ -88,9 +70,14 @@ export function buildBroken() {
 
     if (brokenCount > 5) {
       remark = "Critical";
-    } else if (brokenCount >= 3) {
+    } else if (brokenCount > 2) {
       remark = "Warning";
     }
+
+    // Sort broken sizes in correct size order
+    brokenSizes.sort(
+      (a, b) => SIZE_SEQUENCE.indexOf(a) - SIZE_SEQUENCE.indexOf(b)
+    );
 
     result.push({
       styleId,
