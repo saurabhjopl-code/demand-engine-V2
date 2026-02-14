@@ -1,5 +1,6 @@
 import { computedStore } from "../../store/computed.store.js";
 import { buildDemand } from "../../engine/reports/demand.engine.js";
+import { applyGlobalSearch } from "../../utils/search.utils.js";
 
 let expandedStyles = new Set();
 
@@ -43,7 +44,10 @@ export function renderDemand() {
     </div>
   `;
 
-  const data = computedStore.reports.demand;
+  let data = computedStore.reports.demand;
+
+  // 🔎 FILTER STYLE LEVEL (styleId)
+  const filteredRows = applyGlobalSearch(data.rows, ["styleId"]);
 
   let html = `
     <table class="summary-table">
@@ -66,7 +70,7 @@ export function renderDemand() {
       <tbody>
   `;
 
-  data.rows.forEach(row => {
+  filteredRows.forEach(row => {
 
     const isExpanded = expandedStyles.has(row.styleId);
     const scClass = getScClass(row.sc);
@@ -90,7 +94,10 @@ export function renderDemand() {
 
     if (isExpanded) {
 
-      row.skus.forEach(sku => {
+      // 🔎 SKU LEVEL FILTER
+      const filteredSkus = applyGlobalSearch(row.skus, ["sku"]);
+
+      filteredSkus.forEach(sku => {
 
         html += `
           <tr class="sku-row">
@@ -112,23 +119,19 @@ export function renderDemand() {
   });
 
   html += `</tbody></table>`;
-
   reportBody.innerHTML = html;
 
   document.querySelectorAll(".style-row").forEach(row => {
     row.addEventListener("click", () => {
       const styleId = row.dataset.style;
-      if (expandedStyles.has(styleId)) {
-        expandedStyles.delete(styleId);
-      } else {
-        expandedStyles.add(styleId);
-      }
+      expandedStyles.has(styleId)
+        ? expandedStyles.delete(styleId)
+        : expandedStyles.add(styleId);
       renderDemand();
     });
   });
 
-  document
-    .getElementById("scDaySelector")
+  document.getElementById("scDaySelector")
     .addEventListener("change", (e) => {
       const days = Number(e.target.value);
       buildDemand(days);
