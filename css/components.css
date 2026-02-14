@@ -1,7 +1,7 @@
 .card {
   background: var(--bg-card);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 18px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.04);
 }
 
@@ -17,7 +17,7 @@
 .btn-secondary {
   background: #e5e7eb;
   border: none;
-  padding: 8px 18px;
+  padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
 }
@@ -27,4 +27,5 @@ input {
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
+  font-size: 13px;
 }
