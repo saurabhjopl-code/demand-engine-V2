@@ -3,12 +3,14 @@ import { renderOverstock } from "./reports/overstock.binding.js";
 import { renderSizeCurve } from "./reports/sizeCurve.binding.js";
 import { renderBroken } from "./reports/broken.binding.js";
 import { renderHero } from "./reports/hero.binding.js";
+import { renderDW } from "./reports/dw.binding.js";
 
 import { buildDemand } from "../engine/reports/demand.engine.js";
 import { buildOverstock } from "../engine/reports/overstock.engine.js";
 import { buildSizeCurve } from "../engine/reports/sizeCurve.engine.js";
 import { buildBroken } from "../engine/reports/broken.engine.js";
 import { buildHero } from "../engine/reports/hero.engine.js";
+import { buildDW } from "../engine/reports/dw.engine.js";
 
 export function renderAllReports() {
 
@@ -24,17 +26,17 @@ export function renderAllReports() {
       const tabName = tab.textContent.trim().toLowerCase();
 
       if (tabName === "demand") {
-        buildDemand(window.currentDemandDays || 45);
+        buildDemand(45);
         renderDemand();
       }
 
       if (tabName === "overstock") {
-        buildOverstock(window.currentOverstockThreshold || 90);
+        buildOverstock(90);
         renderOverstock();
       }
 
       if (tabName === "size curve") {
-        buildSizeCurve(window.currentSizeCurveDays || 45);
+        buildSizeCurve(45);
         renderSizeCurve();
       }
 
@@ -46,6 +48,11 @@ export function renderAllReports() {
       if (tabName === "hero") {
         buildHero();
         renderHero();
+      }
+
+      if (tabName === "dw") {
+        buildDW();
+        renderDW();
       }
 
     });
