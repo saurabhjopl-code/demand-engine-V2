@@ -1,0 +1,10 @@
+:root {
+  --primary: #2563eb;
+  --primary-light: #3b82f6;
+  --bg-page: #f4f6fa;
+  --bg-card: #ffffff;
+  --border: #e5e7eb;
+  --text-dark: #111827;
+  --text-light: #6b7280;
+  --radius: 14px;
+}
