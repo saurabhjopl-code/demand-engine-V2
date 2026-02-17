@@ -1,11 +1,25 @@
 import { dataStore } from "../../store/data.store.js";
 import { computedStore } from "../../store/computed.store.js";
 
+const SIZE_ORDER = [
+  "FS","XS","S","M","L","XL","XXL",
+  "3XL","4XL","5XL","6XL",
+  "7XL","8XL","9XL","10XL"
+];
+
 function getTotalSaleDays() {
   return dataStore.saleDays.reduce(
     (sum, r) => sum + Number(r.Days || 0),
     0
   );
+}
+
+function getSkuSize(styleId, sku) {
+  const row = dataStore.sales.find(
+    r => r["Style ID"] === styleId &&
+         r["Uniware SKU"] === sku
+  );
+  return row?.Size || "FS";
 }
 
 function getStockByMode(styleId, stockMode) {
@@ -86,14 +100,11 @@ export function buildDemand(scDays = 45, stockMode = "total") {
     const totalSales = data.totalSales;
     const totalStock = getStockByMode(styleId, stockMode);
 
-    // 🔥 DRR based on actual sale days
     const drr = totalSaleDays > 0
       ? totalSales / totalSaleDays
       : 0;
 
-    // 🔥 Required demand based on SC selector
     const requiredDemand = drr * scDays;
-
     const directDemand = Math.max(requiredDemand - totalStock, 0);
 
     const productionRows = dataStore.production.filter(
@@ -106,15 +117,16 @@ export function buildDemand(scDays = 45, stockMode = "total") {
     );
 
     const pending = Math.max(directDemand - production, 0);
-
     const sc = drr > 0 ? totalStock / drr : 0;
 
     const skuRows = [];
 
     Object.entries(data.skus).forEach(([sku, skuSales]) => {
 
-      const skuStock = getSkuStockByMode(styleId, sku, stockMode);
+      const size = getSkuSize(styleId, sku);
+      const sizeIndex = SIZE_ORDER.indexOf(size);
 
+      const skuStock = getSkuStockByMode(styleId, sku, stockMode);
       const skuDrr = totalSaleDays > 0
         ? skuSales / totalSaleDays
         : 0;
@@ -131,11 +143,12 @@ export function buildDemand(scDays = 45, stockMode = "total") {
         : 0;
 
       const skuPending = Math.max(skuDirect - skuProduction, 0);
-
       const skuSc = skuDrr > 0 ? skuStock / skuDrr : 0;
 
       skuRows.push({
         sku,
+        size,
+        sizeIndex: sizeIndex === -1 ? 0 : sizeIndex,
         totalSales: skuSales,
         totalStock: skuStock,
         drr: skuDrr,
@@ -147,7 +160,8 @@ export function buildDemand(scDays = 45, stockMode = "total") {
       });
     });
 
-    skuRows.sort((a, b) => b.totalSales - a.totalSales);
+    // 🔥 SORT BY SIZE ORDER
+    skuRows.sort((a, b) => a.sizeIndex - b.sizeIndex);
 
     rows.push({
       styleId,
