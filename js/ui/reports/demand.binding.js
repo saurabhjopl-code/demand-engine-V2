@@ -26,28 +26,38 @@ export function renderDemand() {
   const reportBody = document.querySelector(".report-body");
   const reportHeader = document.querySelector(".report-header");
 
-  const selectedDays =
-    computedStore.reports?.demand?.selectedDays || 45;
+  const reportData = computedStore.reports?.demand;
+
+  const selectedDays = reportData?.selectedDays || 45;
+  const stockMode = reportData?.stockMode || "total";
 
   reportHeader.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div>Demand Report</div>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span style="font-size:13px;">SC Days:</span>
-        <select id="scDaySelector" class="sc-select">
-          <option value="45" ${selectedDays==45?"selected":""}>45D</option>
-          <option value="60" ${selectedDays==60?"selected":""}>60D</option>
-          <option value="90" ${selectedDays==90?"selected":""}>90D</option>
-          <option value="120" ${selectedDays==120?"selected":""}>120D</option>
-        </select>
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div>
+          <span style="font-size:13px;">SC Days:</span>
+          <select id="scDaySelector" class="sc-select">
+            <option value="45" ${selectedDays==45?"selected":""}>45D</option>
+            <option value="60" ${selectedDays==60?"selected":""}>60D</option>
+            <option value="90" ${selectedDays==90?"selected":""}>90D</option>
+            <option value="120" ${selectedDays==120?"selected":""}>120D</option>
+          </select>
+        </div>
+        <div>
+          <span style="font-size:13px;">Stock Basis:</span>
+          <select id="stockModeSelector" class="sc-select">
+            <option value="total" ${stockMode==="total"?"selected":""}>Total Stock</option>
+            <option value="seller" ${stockMode==="seller"?"selected":""}>Seller Stock</option>
+          </select>
+        </div>
       </div>
     </div>
   `;
 
-  let data = computedStore.reports.demand;
+  let rows = reportData.rows;
 
-  // 🔎 FILTER STYLE LEVEL (styleId)
-  const filteredRows = applyGlobalSearch(data.rows, ["styleId"]);
+  rows = applyGlobalSearch(rows, ["styleId"]);
 
   let html = `
     <table class="summary-table">
@@ -55,8 +65,6 @@ export function renderDemand() {
         <tr>
           <th></th>
           <th>Style ID</th>
-          <th>Category</th>
-          <th>Remark</th>
           <th>Total Sales</th>
           <th>Stock</th>
           <th>DRR</th>
@@ -70,17 +78,15 @@ export function renderDemand() {
       <tbody>
   `;
 
-  filteredRows.forEach(row => {
+  rows.forEach(row => {
 
     const isExpanded = expandedStyles.has(row.styleId);
     const scClass = getScClass(row.sc);
 
     html += `
       <tr class="style-row ${scClass}" data-style="${row.styleId}">
-        <td>${row.skus.length > 0 ? (isExpanded ? "▼" : "▶") : ""}</td>
+        <td>${row.skus.length ? (isExpanded ? "▼" : "▶") : ""}</td>
         <td><strong>${row.styleId}</strong></td>
-        <td>${row.category}</td>
-        <td>${row.remark}</td>
         <td>${formatNumber(row.totalSales)}</td>
         <td>${formatNumber(row.totalStock)}</td>
         <td>${formatDecimal(row.drr)}</td>
@@ -94,7 +100,6 @@ export function renderDemand() {
 
     if (isExpanded) {
 
-      // 🔎 SKU LEVEL FILTER
       const filteredSkus = applyGlobalSearch(row.skus, ["sku"]);
 
       filteredSkus.forEach(sku => {
@@ -103,7 +108,6 @@ export function renderDemand() {
           <tr class="sku-row">
             <td></td>
             <td style="padding-left:20px;">${sku.sku}</td>
-            <td colspan="2"></td>
             <td>${formatNumber(sku.totalSales)}</td>
             <td>${formatNumber(sku.totalStock)}</td>
             <td>${formatDecimal(sku.drr)}</td>
@@ -133,8 +137,13 @@ export function renderDemand() {
 
   document.getElementById("scDaySelector")
     .addEventListener("change", (e) => {
-      const days = Number(e.target.value);
-      buildDemand(days);
+      buildDemand(Number(e.target.value), stockMode);
+      renderDemand();
+    });
+
+  document.getElementById("stockModeSelector")
+    .addEventListener("change", (e) => {
+      buildDemand(selectedDays, e.target.value);
       renderDemand();
     });
 }
