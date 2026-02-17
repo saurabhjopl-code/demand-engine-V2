@@ -1,61 +1,126 @@
+import { dataStore } from "../../store/data.store.js";
 import { computedStore } from "../../store/computed.store.js";
 
-const SIZE_ORDER = [
-  "FS","XS","S","M","L","XL","XXL",
-  "3XL","4XL","5XL","6XL",
-  "7XL","8XL","9XL","10XL"
-];
+function getStockByMode(styleId, stockMode) {
 
-export function buildOverstock(threshold = 90) {
+  const rows = dataStore.stock.filter(r => r["Style ID"] === styleId);
 
-  const master = computedStore.master;
-  if (!master) return;
+  if (stockMode === "seller") {
+    return rows
+      .filter(r => r.FC === "SELLER")
+      .reduce((sum, r) => sum + Number(r.Units || 0), 0);
+  }
+
+  return rows.reduce((sum, r) => sum + Number(r.Units || 0), 0);
+}
+
+function getSkuStockByMode(styleId, sku, stockMode) {
+
+  const rows = dataStore.stock.filter(
+    r => r["Style ID"] === styleId &&
+         r["Uniware SKU"] === sku
+  );
+
+  if (stockMode === "seller") {
+    return rows
+      .filter(r => r.FC === "SELLER")
+      .reduce((sum, r) => sum + Number(r.Units || 0), 0);
+  }
+
+  return rows.reduce((sum, r) => sum + Number(r.Units || 0), 0);
+}
+
+function getStyleMeta(styleId) {
+
+  const row = dataStore.styleStatus.find(
+    r => r["Style ID"] === styleId
+  );
+
+  if (!row) {
+    return { category: "", remark: "" };
+  }
+
+  return {
+    category: row.Category || "",
+    remark: row["Company Remark"] || ""
+  };
+}
+
+export function buildOverstock(threshold = 90, stockMode = "total") {
+
+  const sales = dataStore.sales;
+  const styleMap = {};
+
+  sales.forEach(row => {
+
+    const style = row["Style ID"];
+    const sku = row["Uniware SKU"];
+    const units = Number(row.Units || 0);
+
+    if (!styleMap[style]) {
+      styleMap[style] = {
+        totalSales: 0,
+        skus: {}
+      };
+    }
+
+    styleMap[style].totalSales += units;
+
+    if (!styleMap[style].skus[sku]) {
+      styleMap[style].skus[sku] = 0;
+    }
+
+    styleMap[style].skus[sku] += units;
+  });
 
   const rows = [];
 
-  Object.values(master.styles).forEach(style => {
+  Object.entries(styleMap).forEach(([styleId, data]) => {
 
-    const drr = style.drr;
-    const stock = style.totalStock;
-    const sc = drr > 0 ? stock / drr : 0;
+    const meta = getStyleMeta(styleId);
 
-    if (sc <= threshold) return;
+    const totalSales = data.totalSales;
+    const totalStock = getStockByMode(styleId, stockMode);
 
-    const excessUnits = stock - (drr * threshold);
+    const drr = totalSales / 45; // keeping consistent with earlier logic
+    const sc = drr > 0 ? totalStock / drr : 0;
 
-    const skuRows = Object.values(style.skus)
-      .sort((a, b) => {
-        const sizeA = Object.keys(a.sizes)[0] || "";
-        const sizeB = Object.keys(b.sizes)[0] || "";
-        return SIZE_ORDER.indexOf(sizeA) - SIZE_ORDER.indexOf(sizeB);
-      })
-      .map(sku => {
+    if (sc < threshold) return;
 
-        const skuDRR = sku.drr;
-        const skuStock = sku.totalStock;
-        const skuSC = skuDRR > 0 ? skuStock / skuDRR : 0;
+    const excessUnits = Math.max(totalStock - (drr * threshold), 0);
 
-        if (skuSC <= threshold) return null;
+    const skuRows = [];
 
-        const skuExcess = skuStock - (skuDRR * threshold);
+    Object.entries(data.skus).forEach(([sku, skuSales]) => {
 
-        return {
-          sku: sku.sku,
-          totalSales: sku.totalSales,
-          stock: skuStock,
-          drr: skuDRR,
-          sc: skuSC,
-          excessUnits: skuExcess
-        };
-      })
-      .filter(Boolean);
+      const skuStock = getSkuStockByMode(styleId, sku, stockMode);
+
+      const skuDrr = skuSales / 45;
+      const skuSc = skuDrr > 0 ? skuStock / skuDrr : 0;
+
+      if (skuSc < threshold) return;
+
+      const skuExcess = Math.max(skuStock - (skuDrr * threshold), 0);
+
+      skuRows.push({
+        sku,
+        totalSales: skuSales,
+        stock: skuStock,
+        drr: skuDrr,
+        sc: skuSc,
+        excessUnits: skuExcess
+      });
+    });
+
+    // 🔥 Sort SKU rows by sales DESC
+    skuRows.sort((a, b) => b.totalSales - a.totalSales);
 
     rows.push({
-      styleId: style.styleId,
-      category: style.category,
-      remark: style.remark,
-      totalSales: style.totalSales,
-      stock,
+      styleId,
+      category: meta.category,
+      remark: meta.remark,
+      totalSales,
+      stock: totalStock,
       drr,
       sc,
       excessUnits,
@@ -63,10 +128,13 @@ export function buildOverstock(threshold = 90) {
     });
   });
 
-  rows.sort((a, b) => b.sc - a.sc);
+  // 🔥 Sort Style rows by sales DESC
+  rows.sort((a, b) => b.totalSales - a.totalSales);
 
+  computedStore.reports = computedStore.reports || {};
   computedStore.reports.overstock = {
     rows,
-    threshold
+    threshold,
+    stockMode
   };
 }
