@@ -23,20 +23,27 @@ export function renderAllReports() {
       tabs.forEach(t => t.classList.remove("active"));
       tab.classList.add("active");
 
-      const tabName = tab.textContent.trim().toLowerCase();
+      const tabName = tab.dataset.tab;
 
       if (tabName === "demand") {
-        buildDemand(45);
+        buildDemand(
+          computedStore.reports?.demand?.selectedDays || 45,
+          computedStore.reports?.demand?.stockMode || "total"
+        );
         renderDemand();
       }
 
       if (tabName === "overstock") {
-        buildOverstock(90);
+        buildOverstock(
+          computedStore.reports?.overstock?.threshold || 90
+        );
         renderOverstock();
       }
 
-      if (tabName === "size curve") {
-        buildSizeCurve(45);
+      if (tabName === "size-curve") {
+        buildSizeCurve(
+          computedStore.reports?.sizeCurve?.viewMode || "pending"
+        );
         renderSizeCurve();
       }
 
@@ -59,6 +66,7 @@ export function renderAllReports() {
 
   });
 
-  buildDemand(45);
+  // Default load
+  buildDemand(45, "total");
   renderDemand();
 }
