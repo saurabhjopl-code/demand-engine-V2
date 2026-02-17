@@ -1,6 +1,5 @@
 import { computedStore } from "../../store/computed.store.js";
 import { buildOverstock } from "../../engine/reports/overstock.engine.js";
-import { applyGlobalSearch } from "../../utils/search.utils.js";
 
 let expandedStyles = new Set();
 
@@ -17,28 +16,36 @@ export function renderOverstock() {
   const reportBody = document.querySelector(".report-body");
   const reportHeader = document.querySelector(".report-header");
 
-  const threshold =
-    computedStore.reports?.overstock?.threshold || 90;
+  const reportData = computedStore.reports?.overstock;
+
+  const threshold = reportData?.threshold || 90;
+  const stockMode = reportData?.stockMode || "total";
 
   reportHeader.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div>Overstock Report</div>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span style="font-size:13px;">SC Threshold:</span>
-        <select id="overstockSelector" class="sc-select">
-          <option value="60" ${threshold==60?"selected":""}>60</option>
-          <option value="90" ${threshold==90?"selected":""}>90</option>
-          <option value="120" ${threshold==120?"selected":""}>120</option>
-          <option value="150" ${threshold==150?"selected":""}>150</option>
-        </select>
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div>
+          <span style="font-size:13px;">SC Threshold:</span>
+          <select id="overstockSelector" class="sc-select">
+            <option value="60" ${threshold==60?"selected":""}>60</option>
+            <option value="90" ${threshold==90?"selected":""}>90</option>
+            <option value="120" ${threshold==120?"selected":""}>120</option>
+            <option value="150" ${threshold==150?"selected":""}>150</option>
+          </select>
+        </div>
+        <div>
+          <span style="font-size:13px;">Stock Basis:</span>
+          <select id="stockModeSelector" class="sc-select">
+            <option value="total" ${stockMode==="total"?"selected":""}>Total Stock</option>
+            <option value="seller" ${stockMode==="seller"?"selected":""}>Seller Stock</option>
+          </select>
+        </div>
       </div>
     </div>
   `;
 
-  let data = computedStore.reports.overstock;
-
-  // 🔎 FILTER STYLE LEVEL
-  const filteredRows = applyGlobalSearch(data.rows, ["styleId"]);
+  const data = reportData.rows;
 
   let html = `
     <table class="summary-table">
@@ -58,7 +65,7 @@ export function renderOverstock() {
       <tbody>
   `;
 
-  filteredRows.forEach(row => {
+  data.forEach(row => {
 
     const isExpanded = expandedStyles.has(row.styleId);
 
@@ -78,9 +85,7 @@ export function renderOverstock() {
 
     if (isExpanded) {
 
-      const filteredSkus = applyGlobalSearch(row.skus, ["sku"]);
-
-      filteredSkus.forEach(sku => {
+      row.skus.forEach(sku => {
 
         html += `
           <tr class="sku-row">
@@ -113,8 +118,13 @@ export function renderOverstock() {
 
   document.getElementById("overstockSelector")
     .addEventListener("change", (e) => {
-      const value = Number(e.target.value);
-      buildOverstock(value);
+      buildOverstock(Number(e.target.value), stockMode);
+      renderOverstock();
+    });
+
+  document.getElementById("stockModeSelector")
+    .addEventListener("change", (e) => {
+      buildOverstock(threshold, e.target.value);
       renderOverstock();
     });
 }
