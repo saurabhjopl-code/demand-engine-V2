@@ -1,5 +1,6 @@
 import { computedStore } from "../../store/computed.store.js";
 import { buildDemand } from "../../engine/reports/demand.engine.js";
+import { buildSizeCurve } from "../../engine/reports/sizeCurve.engine.js";
 import { applyGlobalSearch } from "../../utils/search.utils.js";
 
 let expandedStyles = new Set();
@@ -56,28 +57,26 @@ export function renderDemand() {
   `;
 
   let rows = reportData.rows;
-
   rows = applyGlobalSearch(rows, ["styleId"]);
 
   let html = `
     <table class="summary-table">
-     <thead>
-    <tr>
-    <th></th>
-    <th>Style ID</th>
-    <th>Category</th>
-    <th>Remark</th>
-    <th>Total Sales</th>
-    <th>Stock</th>
-    <th>DRR</th>
-    <th>SC</th>
-    <th>Req Demand</th>
-    <th>Direct Demand</th>
-    <th>Under Production</th>
-    <th>Pending</th>
-    </tr>
-</thead>
-
+      <thead>
+        <tr>
+          <th></th>
+          <th>Style ID</th>
+          <th>Category</th>
+          <th>Remark</th>
+          <th>Total Sales</th>
+          <th>Stock</th>
+          <th>DRR</th>
+          <th>SC</th>
+          <th>Req Demand</th>
+          <th>Direct Demand</th>
+          <th>Under Production</th>
+          <th>Pending</th>
+        </tr>
+      </thead>
       <tbody>
   `;
 
@@ -87,21 +86,20 @@ export function renderDemand() {
     const scClass = getScClass(row.sc);
 
     html += `
-     <tr class="style-row ${scClass}" data-style="${row.styleId}">
-  <td>${row.skus.length ? (isExpanded ? "▼" : "▶") : ""}</td>
-  <td><strong>${row.styleId}</strong></td>
-  <td>${row.category}</td>
-  <td>${row.remark}</td>
-  <td>${formatNumber(row.totalSales)}</td>
-  <td>${formatNumber(row.totalStock)}</td>
-  <td>${formatDecimal(row.drr)}</td>
-  <td>${Math.round(row.sc)}</td>
-  <td>${formatNumber(row.requiredDemand)}</td>
-  <td>${formatNumber(row.directDemand)}</td>
-  <td>${formatNumber(row.production)}</td>
-  <td>${formatNumber(row.pending)}</td>
-</tr>
-
+      <tr class="style-row ${scClass}" data-style="${row.styleId}">
+        <td>${row.skus.length ? (isExpanded ? "▼" : "▶") : ""}</td>
+        <td><strong>${row.styleId}</strong></td>
+        <td>${row.category}</td>
+        <td>${row.remark}</td>
+        <td>${formatNumber(row.totalSales)}</td>
+        <td>${formatNumber(row.totalStock)}</td>
+        <td>${formatDecimal(row.drr)}</td>
+        <td>${Math.round(row.sc)}</td>
+        <td>${formatNumber(row.requiredDemand)}</td>
+        <td>${formatNumber(row.directDemand)}</td>
+        <td>${formatNumber(row.production)}</td>
+        <td>${formatNumber(row.pending)}</td>
+      </tr>
     `;
 
     if (isExpanded) {
@@ -141,16 +139,31 @@ export function renderDemand() {
     });
   });
 
+  // SC Days change
   document.getElementById("scDaySelector")
     .addEventListener("change", (e) => {
+
       buildDemand(Number(e.target.value), stockMode);
+
+      // 🔥 Rebuild Size Curve automatically
+      const viewMode =
+        computedStore.reports?.sizeCurve?.viewMode || "pending";
+      buildSizeCurve(viewMode);
+
       renderDemand();
     });
 
+  // Stock Mode change
   document.getElementById("stockModeSelector")
     .addEventListener("change", (e) => {
+
       buildDemand(selectedDays, e.target.value);
+
+      // 🔥 Rebuild Size Curve automatically
+      const viewMode =
+        computedStore.reports?.sizeCurve?.viewMode || "pending";
+      buildSizeCurve(viewMode);
+
       renderDemand();
     });
 }
-
