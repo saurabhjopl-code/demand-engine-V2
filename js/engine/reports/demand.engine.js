@@ -30,6 +30,25 @@ function getSkuStockByMode(styleId, sku, stockMode) {
   return rows.reduce((sum, r) => sum + Number(r.Units || 0), 0);
 }
 
+function getStyleMeta(styleId) {
+
+  const row = dataStore.styleStatus.find(
+    r => r["Style ID"] === styleId
+  );
+
+  if (!row) {
+    return {
+      category: "",
+      remark: ""
+    };
+  }
+
+  return {
+    category: row.Category || "",
+    remark: row["Company Remark"] || ""
+  };
+}
+
 export function buildDemand(days = 45, stockMode = "total") {
 
   const sales = dataStore.sales;
@@ -60,6 +79,8 @@ export function buildDemand(days = 45, stockMode = "total") {
   const rows = [];
 
   Object.entries(styleMap).forEach(([styleId, data]) => {
+
+    const meta = getStyleMeta(styleId);
 
     const totalSales = data.totalSales;
     const totalStock = getStockByMode(styleId, stockMode);
@@ -116,11 +137,13 @@ export function buildDemand(days = 45, stockMode = "total") {
       });
     });
 
-    // 🔥 SORT SKU rows by sales DESC
+    // 🔥 Sort SKUs by sales DESC
     skuRows.sort((a, b) => b.totalSales - a.totalSales);
 
     rows.push({
       styleId,
+      category: meta.category,
+      remark: meta.remark,
       totalSales,
       totalStock,
       drr,
@@ -133,7 +156,7 @@ export function buildDemand(days = 45, stockMode = "total") {
     });
   });
 
-  // 🔥 SORT STYLE rows by sales DESC
+  // 🔥 Sort Styles by sales DESC
   rows.sort((a, b) => b.totalSales - a.totalSales);
 
   computedStore.reports = computedStore.reports || {};
