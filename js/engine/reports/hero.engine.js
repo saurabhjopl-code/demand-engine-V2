@@ -1,146 +1,152 @@
 import { dataStore } from "../../store/data.store.js";
 import { computedStore } from "../../store/computed.store.js";
-import { SIZE_SEQUENCE } from "../../config/constants.js";
 
-function getLast3Months() {
-  const months = [...new Set(dataStore.sales.map(r => r.Month))];
-  return months.sort().slice(-3);
+const MONTH_MAP = {
+  JAN: 0, FEB: 1, MAR: 2, APR: 3,
+  MAY: 4, JUN: 5, JUL: 6, AUG: 7,
+  SEP: 8, OCT: 9, NOV: 10, DEC: 11
+};
+
+function parseMonth(monthStr) {
+  const [mon, year] = monthStr.split("-");
+  return new Date(Number(year), MONTH_MAP[mon], 1);
 }
 
-function getSellerStockByStyle(styleId) {
-
-  const sellerRows = dataStore.stock.filter(
-    r => r["Style ID"] === styleId && r.FC === "SELLER"
-  );
-
-  const sizeMap = {};
-
-  sellerRows.forEach(row => {
-    const size = row.Size;
-    const units = Number(row.Units || 0);
-
-    if (!sizeMap[size]) sizeMap[size] = 0;
-    sizeMap[size] += units;
-  });
-
-  return sizeMap;
+function sortMonthsChronologically(months) {
+  return [...months].sort((a, b) => parseMonth(a) - parseMonth(b));
 }
 
-function buildMonthlyRanking(month) {
+function getStyleMeta(styleId) {
+  const row = dataStore.styleStatus.find(r => r["Style ID"] === styleId);
+  return {
+    remark: row?.["Company Remark"] || ""
+  };
+}
 
-  const monthData = dataStore.sales.filter(r => r.Month === month);
+export function buildHero(topN = 20) {
 
+  const sales = dataStore.sales;
+
+  // Get unique months
+  const months = [...new Set(sales.map(r => r.Month))];
+  const sortedMonths = sortMonthsChronologically(months);
+
+  const latestMonth = sortedMonths[sortedMonths.length - 1];
+  const previousMonth = sortedMonths[sortedMonths.length - 2];
+
+  // Build style → month → sales map
   const styleMap = {};
 
-  monthData.forEach(row => {
+  sales.forEach(row => {
+
     const style = row["Style ID"];
+    const month = row.Month;
     const units = Number(row.Units || 0);
 
-    if (!styleMap[style]) styleMap[style] = 0;
-    styleMap[style] += units;
+    if (!styleMap[style]) {
+      styleMap[style] = {};
+    }
+
+    if (!styleMap[style][month]) {
+      styleMap[style][month] = 0;
+    }
+
+    styleMap[style][month] += units;
   });
 
-  const saleDaysRow = dataStore.saleDays.find(r => r.Month === month);
-  const saleDays = saleDaysRow ? Number(saleDaysRow.Days || 1) : 1;
+  // Rank per month
+  const monthRankMap = {};
 
-  const ranked = Object.entries(styleMap)
-    .map(([style, sales]) => ({
+  sortedMonths.forEach(month => {
+
+    const arr = Object.entries(styleMap).map(([style, months]) => ({
       style,
-      sales,
-      drr: sales / saleDays
-    }))
-    .sort((a, b) => b.sales - a.sales);
+      sales: months[month] || 0
+    }));
 
-  ranked.forEach((r, index) => {
-    r.rank = index + 1;
+    arr.sort((a, b) => b.sales - a.sales);
+
+    monthRankMap[month] = {};
+    arr.forEach((item, index) => {
+      monthRankMap[month][item.style] = index + 1;
+    });
   });
 
-  return ranked;
-}
+  const result = [];
 
-function getBrokenCount(styleId) {
+  Object.entries(styleMap).forEach(([style, months]) => {
 
-  const sellerStock = getSellerStockByStyle(styleId);
+    const meta = getStyleMeta(style);
 
-  let brokenCount = 0;
+    const salesByMonth = {};
+    const ranksByMonth = {};
+    const drrByMonth = {};
 
-  SIZE_SEQUENCE.forEach(size => {
-    const stock = sellerStock[size] || 0;
-    if (stock >= 0 && stock <= 5) brokenCount++;
-  });
+    sortedMonths.forEach(month => {
 
-  return brokenCount;
-}
+      const totalSales = months[month] || 0;
+      salesByMonth[month] = totalSales;
 
-function getRemark(dec, jan, feb) {
+      ranksByMonth[month] =
+        monthRankMap[month][style] || null;
 
-  if (!dec) return "New Addition";
+      // Use actual sale days
+      const saleDayRow = dataStore.saleDays.find(
+        r => r.Month === month
+      );
 
-  if (feb.rank < jan.rank) return "Rank Improved";
-  if (feb.rank > jan.rank) return "Rank Dropped";
+      const days = saleDayRow
+        ? Number(saleDayRow.Days || 1)
+        : 1;
 
-  if (dec.drr > jan.drr && jan.drr > feb.drr) return "DRR Dropped";
-
-  return "";
-}
-
-export function buildHero() {
-
-  const months = getLast3Months();
-  const [m1, m2, m3] = months;
-
-  const r1 = buildMonthlyRanking(m1);
-  const r2 = buildMonthlyRanking(m2);
-  const r3 = buildMonthlyRanking(m3);
-
-  const topPool = new Set([
-    ...r1.slice(0, 20).map(r => r.style),
-    ...r2.slice(0, 20).map(r => r.style),
-    ...r3.slice(0, 20).map(r => r.style)
-  ]);
-
-  const heroData = [];
-
-  topPool.forEach(style => {
-
-    const dec = r1.find(r => r.style === style);
-    const jan = r2.find(r => r.style === style);
-    const feb = r3.find(r => r.style === style);
-
-    const sellerStock = getSellerStockByStyle(style);
-    const totalSellerStock = Object.values(sellerStock)
-      .reduce((a, b) => a + b, 0);
-
-    const sc = feb ? (totalSellerStock / feb.drr) : 0;
-
-    heroData.push({
-      style,
-      months,
-      sales: {
-        [m1]: dec?.sales || 0,
-        [m2]: jan?.sales || 0,
-        [m3]: feb?.sales || 0
-      },
-      ranks: {
-        [m1]: dec?.rank || "-",
-        [m2]: jan?.rank || "-",
-        [m3]: feb?.rank || "-"
-      },
-      drr: {
-        [m1]: dec?.drr || 0,
-        [m2]: jan?.drr || 0,
-        [m3]: feb?.drr || 0
-      },
-      sc: sc.toFixed(1),
-      broken: getBrokenCount(style),
-      remark: getRemark(dec, jan, feb),
-      latestRank: feb?.rank || 9999
+      drrByMonth[month] =
+        totalSales / days;
     });
 
+    // Movement calculation
+    const currRank = ranksByMonth[latestMonth];
+    const prevRank = ranksByMonth[previousMonth];
+
+    const currDRR = drrByMonth[latestMonth];
+    const prevDRR = drrByMonth[previousMonth];
+
+    const rankImproved = currRank <= prevRank;
+    const drrImproved = currDRR >= prevDRR;
+
+    let remarkType = "mixed";
+    let remarkText = "";
+
+    if (rankImproved && drrImproved) {
+      remarkType = "positive";
+      remarkText = "Rank Improved & DRR Improved";
+    } else if (!rankImproved && !drrImproved) {
+      remarkType = "negative";
+      remarkText = "Rank Dropped & DRR Dropped";
+    } else {
+      remarkType = "mixed";
+      remarkText = rankImproved
+        ? "Rank Improved & DRR Dropped"
+        : "Rank Dropped & DRR Improved";
+    }
+
+    result.push({
+      style,
+      months: sortedMonths,
+      sales: salesByMonth,
+      ranks: ranksByMonth,
+      drr: drrByMonth,
+      remarkText,
+      remarkType,
+      latestRank: currRank
+    });
   });
 
-  heroData.sort((a, b) => a.latestRank - b.latestRank);
+  // Sort by latest rank
+  result.sort((a, b) => a.latestRank - b.latestRank);
 
-  computedStore.hero = heroData.slice(0, 20);
-
+  computedStore.hero = result.slice(0, topN);
+  computedStore.heroMeta = {
+    topN,
+    months: sortedMonths
+  };
 }
