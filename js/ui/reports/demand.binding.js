@@ -104,26 +104,29 @@ export function renderDemand() {
 
     if (isExpanded) {
 
-      const filteredSkus = applyGlobalSearch(row.skus, ["sku"]);
+  const filteredSkus = applyGlobalSearch(row.skus, ["sku"]);
 
-      filteredSkus.forEach(sku => {
+  filteredSkus.forEach(sku => {
 
-        html += `
-          <tr class="sku-row">
-            <td></td>
-            <td style="padding-left:20px;">${sku.sku}</td>
-            <td>${formatNumber(sku.totalSales)}</td>
-            <td>${formatNumber(sku.totalStock)}</td>
-            <td>${formatDecimal(sku.drr)}</td>
-            <td>${Math.round(sku.sc)}</td>
-            <td>${formatNumber(sku.requiredDemand)}</td>
-            <td>${formatNumber(sku.directDemand)}</td>
-            <td>${formatNumber(sku.production)}</td>
-            <td>${formatNumber(sku.pending)}</td>
-          </tr>
-        `;
-      });
-    }
+    html += `
+      <tr class="sku-row">
+        <td></td>
+        <td style="padding-left:20px;">${sku.sku}</td>
+        <td></td> <!-- Category -->
+        <td></td> <!-- Remark -->
+        <td>${formatNumber(sku.totalSales)}</td>
+        <td>${formatNumber(sku.totalStock)}</td>
+        <td>${formatDecimal(sku.drr)}</td>
+        <td>${Math.round(sku.sc)}</td>
+        <td>${formatNumber(sku.requiredDemand)}</td>
+        <td>${formatNumber(sku.directDemand)}</td>
+        <td>${formatNumber(sku.production)}</td>
+        <td>${formatNumber(sku.pending)}</td>
+      </tr>
+    `;
+  });
+}
+
   });
 
   html += `</tbody></table>`;
@@ -167,3 +170,4 @@ export function renderDemand() {
       renderDemand();
     });
 }
+
