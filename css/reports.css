@@ -236,3 +236,18 @@
   color: #d97706;
   font-weight: 600;
 }
+
+.risk-red {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.risk-orange {
+  color: #f97316;
+  font-weight: 600;
+}
+
+.risk-yellow {
+  color: #eab308;
+  font-weight: 600;
+}

@@ -16,31 +16,29 @@ export function renderSizeCurve() {
   const reportBody = document.querySelector(".report-body");
   const reportHeader = document.querySelector(".report-header");
 
-  const viewMode =
-    computedStore.reports?.sizeCurve?.viewMode || "pending";
+  const selectedDays =
+    computedStore.reports?.sizeCurve?.selectedDays || 45;
 
   reportHeader.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <div>Size Curve Recommendation</div>
+      <div>Size Curve Recommendation (Seller Stock Basis)</div>
       <div>
-        <span style="font-size:13px;">View:</span>
-        <select id="sizeCurveViewSelector" class="sc-select">
-          <option value="pending" ${viewMode==="pending"?"selected":""}>
-            Show Pending Only
-          </option>
-          <option value="all" ${viewMode==="all"?"selected":""}>
-            Show All
-          </option>
+        <span style="font-size:13px;">SC Days:</span>
+        <select id="sizeCurveDaysSelector" class="sc-select">
+          <option value="45" ${selectedDays==45?"selected":""}>45D</option>
+          <option value="60" ${selectedDays==60?"selected":""}>60D</option>
+          <option value="90" ${selectedDays==90?"selected":""}>90D</option>
+          <option value="120" ${selectedDays==120?"selected":""}>120D</option>
         </select>
       </div>
     </div>
   `;
 
-  const data = computedStore.reports.sizeCurve.rows;
+  const data = computedStore.reports.sizeCurve.rows || [];
 
   if (!data.length) {
     reportBody.innerHTML =
-      "<div style='padding:20px;'>No Size Curve Data</div>";
+      "<div style='padding:20px;'>No Styles Require Replenishment</div>";
     return;
   }
 
@@ -49,7 +47,7 @@ export function renderSizeCurve() {
       <thead>
         <tr>
           <th>Style</th>
-          <th>Style Demand</th>
+          <th>Demand</th>
   `;
 
   SIZE_ORDER.forEach(size => {
@@ -82,9 +80,9 @@ export function renderSizeCurve() {
   reportBody.innerHTML = html;
 
   document
-    .getElementById("sizeCurveViewSelector")
+    .getElementById("sizeCurveDaysSelector")
     .addEventListener("change", (e) => {
-      buildSizeCurve(e.target.value);
+      buildSizeCurve(Number(e.target.value));
       renderSizeCurve();
     });
 }
