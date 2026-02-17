@@ -1,90 +1,145 @@
+import { dataStore } from "../../store/data.store.js";
 import { computedStore } from "../../store/computed.store.js";
 
-const SIZE_ORDER = [
-  "FS","XS","S","M","L","XL","XXL",
-  "3XL","4XL","5XL","6XL",
-  "7XL","8XL","9XL","10XL"
-];
+function getStockByMode(styleId, stockMode) {
 
-export function buildDemand(selectedDays = 45) {
+  const rows = dataStore.stock.filter(r => r["Style ID"] === styleId);
 
-  const master = computedStore.master;
-  if (!master) return;
+  if (stockMode === "seller") {
+    return rows
+      .filter(r => r.FC === "SELLER")
+      .reduce((sum, r) => sum + Number(r.Units || 0), 0);
+  }
+
+  // default total
+  return rows.reduce((sum, r) => sum + Number(r.Units || 0), 0);
+}
+
+function getSkuStockByMode(styleId, sku, stockMode) {
+
+  const rows = dataStore.stock.filter(
+    r => r["Style ID"] === styleId &&
+         r["Uniware SKU"] === sku
+  );
+
+  if (stockMode === "seller") {
+    return rows
+      .filter(r => r.FC === "SELLER")
+      .reduce((sum, r) => sum + Number(r.Units || 0), 0);
+  }
+
+  return rows.reduce((sum, r) => sum + Number(r.Units || 0), 0);
+}
+
+export function buildDemand(days = 45, stockMode = "total") {
+
+  const sales = dataStore.sales;
+
+  const styleMap = {};
+
+  sales.forEach(row => {
+
+    const style = row["Style ID"];
+    const sku = row["Uniware SKU"];
+    const units = Number(row.Units || 0);
+
+    if (!styleMap[style]) {
+      styleMap[style] = {
+        totalSales: 0,
+        skus: {}
+      };
+    }
+
+    styleMap[style].totalSales += units;
+
+    if (!styleMap[style].skus[sku]) {
+      styleMap[style].skus[sku] = 0;
+    }
+
+    styleMap[style].skus[sku] += units;
+  });
 
   const rows = [];
 
-  Object.values(master.styles).forEach(style => {
+  Object.entries(styleMap).forEach(([styleId, data]) => {
 
-    const styleDRR = style.drr;
-    const styleStock = style.totalStock;
-    const styleProduction = style.totalProduction || 0;
+    const totalSales = data.totalSales;
 
-    const styleRequired = styleDRR * selectedDays;
+    const totalStock = getStockByMode(styleId, stockMode);
 
-    let styleDirect = styleRequired - styleStock;
-    if (styleDirect < 0) styleDirect = 0;
+    const drr = totalSales / days;
 
-    let stylePending = styleDirect - styleProduction;
-    if (stylePending < 0) stylePending = 0;
+    const sc = drr > 0 ? totalStock / drr : 0;
 
-    // 🔥 Build & Sort SKU Rows by Size Order
-    const skuRows = Object.values(style.skus)
-      .sort((a, b) => {
+    const requiredDemand = drr * days;
+    const directDemand = Math.max(requiredDemand - totalStock, 0);
 
-        const sizeA = Object.keys(a.sizes)[0] || "";
-        const sizeB = Object.keys(b.sizes)[0] || "";
+    const productionRows = dataStore.production.filter(
+      r => r["Uniware SKU"] &&
+           r["Uniware SKU"].includes(styleId)
+    );
 
-        return SIZE_ORDER.indexOf(sizeA) - SIZE_ORDER.indexOf(sizeB);
-      })
-      .map(sku => {
+    const production = productionRows.reduce(
+      (sum, r) => sum + Number(r["In Production"] || 0), 0
+    );
 
-        const skuDRR = sku.drr;
-        const skuStock = sku.totalStock;
-        const skuProduction = sku.production || 0;
+    const pending = Math.max(directDemand - production, 0);
 
-        const skuRequired = skuDRR * selectedDays;
+    const skuRows = [];
 
-        let skuDirect = skuRequired - skuStock;
-        if (skuDirect < 0) skuDirect = 0;
+    Object.entries(data.skus).forEach(([sku, skuSales]) => {
 
-        let skuPending = skuDirect - skuProduction;
-        if (skuPending < 0) skuPending = 0;
+      const skuStock = getSkuStockByMode(styleId, sku, stockMode);
 
-        return {
-          sku: sku.sku,
-          totalSales: sku.totalSales,
-          totalStock: skuStock,
-          drr: skuDRR,
-          sc: skuDRR > 0 ? skuStock / skuDRR : 0,
-          requiredDemand: skuRequired,
-          directDemand: skuDirect,
-          production: skuProduction,
-          pending: skuPending
-        };
+      const skuDrr = skuSales / days;
+      const skuSc = skuDrr > 0 ? skuStock / skuDrr : 0;
+
+      const skuRequired = skuDrr * days;
+      const skuDirect = Math.max(skuRequired - skuStock, 0);
+
+      const skuProdRow = dataStore.production.find(
+        r => r["Uniware SKU"] === sku
+      );
+
+      const skuProduction = skuProdRow
+        ? Number(skuProdRow["In Production"] || 0)
+        : 0;
+
+      const skuPending = Math.max(skuDirect - skuProduction, 0);
+
+      skuRows.push({
+        sku,
+        totalSales: skuSales,
+        totalStock: skuStock,
+        drr: skuDrr,
+        sc: skuSc,
+        requiredDemand: skuRequired,
+        directDemand: skuDirect,
+        production: skuProduction,
+        pending: skuPending
       });
+    });
 
     rows.push({
-      styleId: style.styleId,
-      category: style.category,
-      remark: style.remark,
-      totalSales: style.totalSales,
-      totalStock: styleStock,
-      drr: styleDRR,
-      sc: styleDRR > 0 ? styleStock / styleDRR : 0,
-      requiredDemand: styleRequired,
-      directDemand: styleDirect,
-      production: styleProduction,
-      pending: stylePending,
+      styleId,
+      category: "",
+      remark: "",
+      totalSales,
+      totalStock,
+      drr,
+      sc,
+      requiredDemand,
+      directDemand,
+      production,
+      pending,
       skus: skuRows
     });
   });
 
-  // Sort Styles by Total Sales (High → Low)
-  rows.sort((a, b) => b.totalSales - a.totalSales);
-
   computedStore.reports = computedStore.reports || {};
   computedStore.reports.demand = {
     rows,
-    selectedDays
+    selectedDays: days,
+    stockMode
   };
 }
