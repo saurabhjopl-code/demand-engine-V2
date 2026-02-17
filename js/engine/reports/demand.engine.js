@@ -1,6 +1,13 @@
 import { dataStore } from "../../store/data.store.js";
 import { computedStore } from "../../store/computed.store.js";
 
+function getTotalSaleDays() {
+  return dataStore.saleDays.reduce(
+    (sum, r) => sum + Number(r.Days || 0),
+    0
+  );
+}
+
 function getStockByMode(styleId, stockMode) {
 
   const rows = dataStore.stock.filter(r => r["Style ID"] === styleId);
@@ -31,27 +38,21 @@ function getSkuStockByMode(styleId, sku, stockMode) {
 }
 
 function getStyleMeta(styleId) {
-
   const row = dataStore.styleStatus.find(
     r => r["Style ID"] === styleId
   );
 
-  if (!row) {
-    return {
-      category: "",
-      remark: ""
-    };
-  }
-
   return {
-    category: row.Category || "",
-    remark: row["Company Remark"] || ""
+    category: row?.Category || "",
+    remark: row?.["Company Remark"] || ""
   };
 }
 
-export function buildDemand(days = 45, stockMode = "total") {
+export function buildDemand(scDays = 45, stockMode = "total") {
 
   const sales = dataStore.sales;
+  const totalSaleDays = getTotalSaleDays();
+
   const styleMap = {};
 
   sales.forEach(row => {
@@ -85,10 +86,14 @@ export function buildDemand(days = 45, stockMode = "total") {
     const totalSales = data.totalSales;
     const totalStock = getStockByMode(styleId, stockMode);
 
-    const drr = totalSales / days;
-    const sc = drr > 0 ? totalStock / drr : 0;
+    // 🔥 DRR based on actual sale days
+    const drr = totalSaleDays > 0
+      ? totalSales / totalSaleDays
+      : 0;
 
-    const requiredDemand = drr * days;
+    // 🔥 Required demand based on SC selector
+    const requiredDemand = drr * scDays;
+
     const directDemand = Math.max(requiredDemand - totalStock, 0);
 
     const productionRows = dataStore.production.filter(
@@ -102,16 +107,19 @@ export function buildDemand(days = 45, stockMode = "total") {
 
     const pending = Math.max(directDemand - production, 0);
 
+    const sc = drr > 0 ? totalStock / drr : 0;
+
     const skuRows = [];
 
     Object.entries(data.skus).forEach(([sku, skuSales]) => {
 
       const skuStock = getSkuStockByMode(styleId, sku, stockMode);
 
-      const skuDrr = skuSales / days;
-      const skuSc = skuDrr > 0 ? skuStock / skuDrr : 0;
+      const skuDrr = totalSaleDays > 0
+        ? skuSales / totalSaleDays
+        : 0;
 
-      const skuRequired = skuDrr * days;
+      const skuRequired = skuDrr * scDays;
       const skuDirect = Math.max(skuRequired - skuStock, 0);
 
       const skuProdRow = dataStore.production.find(
@@ -123,6 +131,8 @@ export function buildDemand(days = 45, stockMode = "total") {
         : 0;
 
       const skuPending = Math.max(skuDirect - skuProduction, 0);
+
+      const skuSc = skuDrr > 0 ? skuStock / skuDrr : 0;
 
       skuRows.push({
         sku,
@@ -137,7 +147,6 @@ export function buildDemand(days = 45, stockMode = "total") {
       });
     });
 
-    // 🔥 Sort SKUs by sales DESC
     skuRows.sort((a, b) => b.totalSales - a.totalSales);
 
     rows.push({
@@ -156,13 +165,12 @@ export function buildDemand(days = 45, stockMode = "total") {
     });
   });
 
-  // 🔥 Sort Styles by sales DESC
   rows.sort((a, b) => b.totalSales - a.totalSales);
 
   computedStore.reports = computedStore.reports || {};
   computedStore.reports.demand = {
     rows,
-    selectedDays: days,
+    selectedDays: scDays,
     stockMode
   };
 }
