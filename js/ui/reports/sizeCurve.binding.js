@@ -1,6 +1,5 @@
 import { computedStore } from "../../store/computed.store.js";
 import { buildSizeCurve } from "../../engine/reports/sizeCurve.engine.js";
-import { applyGlobalSearch } from "../../utils/search.utils.js";
 
 const SIZE_ORDER = [
   "FS","XS","S","M","L","XL","XXL",
@@ -17,28 +16,33 @@ export function renderSizeCurve() {
   const reportBody = document.querySelector(".report-body");
   const reportHeader = document.querySelector(".report-header");
 
-  const selectedDays =
-    computedStore.reports?.sizeCurve?.selectedDays || 45;
+  const viewMode =
+    computedStore.reports?.sizeCurve?.viewMode || "pending";
 
   reportHeader.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div>Size Curve Recommendation</div>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span style="font-size:13px;">SC Target:</span>
-        <select id="sizeCurveSelector" class="sc-select">
-          <option value="45" ${selectedDays==45?"selected":""}>45D</option>
-          <option value="60" ${selectedDays==60?"selected":""}>60D</option>
-          <option value="90" ${selectedDays==90?"selected":""}>90D</option>
-          <option value="120" ${selectedDays==120?"selected":""}>120D</option>
+      <div>
+        <span style="font-size:13px;">View:</span>
+        <select id="sizeCurveViewSelector" class="sc-select">
+          <option value="pending" ${viewMode==="pending"?"selected":""}>
+            Show Pending Only
+          </option>
+          <option value="all" ${viewMode==="all"?"selected":""}>
+            Show All
+          </option>
         </select>
       </div>
     </div>
   `;
 
-  let data = computedStore.reports.sizeCurve;
+  const data = computedStore.reports.sizeCurve.rows;
 
-  // 🔎 FILTER STYLE LEVEL
-  const filteredRows = applyGlobalSearch(data.rows, ["styleId"]);
+  if (!data.length) {
+    reportBody.innerHTML =
+      "<div style='padding:20px;'>No Size Curve Data</div>";
+    return;
+  }
 
   let html = `
     <table class="summary-table">
@@ -52,9 +56,13 @@ export function renderSizeCurve() {
     html += `<th>${size}</th>`;
   });
 
-  html += `</tr></thead><tbody>`;
+  html += `
+        </tr>
+      </thead>
+      <tbody>
+  `;
 
-  filteredRows.forEach(row => {
+  data.forEach(row => {
 
     html += `
       <tr>
@@ -70,12 +78,13 @@ export function renderSizeCurve() {
   });
 
   html += `</tbody></table>`;
+
   reportBody.innerHTML = html;
 
-  document.getElementById("sizeCurveSelector")
+  document
+    .getElementById("sizeCurveViewSelector")
     .addEventListener("change", (e) => {
-      const value = Number(e.target.value);
-      buildSizeCurve(value);
+      buildSizeCurve(e.target.value);
       renderSizeCurve();
     });
 }
