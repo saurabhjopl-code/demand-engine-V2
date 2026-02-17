@@ -1,3 +1,5 @@
+import { computedStore } from "../store/computed.store.js";
+
 import { renderDemand } from "./reports/demand.binding.js";
 import { renderOverstock } from "./reports/overstock.binding.js";
 import { renderSizeCurve } from "./reports/sizeCurve.binding.js";
@@ -70,3 +72,4 @@ export function renderAllReports() {
   buildDemand(45, "total");
   renderDemand();
 }
+
