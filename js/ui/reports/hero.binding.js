@@ -1,36 +1,31 @@
 import { computedStore } from "../../store/computed.store.js";
+import { buildHero } from "../../engine/reports/hero.engine.js";
 import { applyGlobalSearch } from "../../utils/search.utils.js";
-
-function getRemarkClass(remark) {
-
-  if (!remark) return "";
-
-  const r = remark.toLowerCase();
-
-  if (r.includes("core")) return "remark-core";
-  if (r.includes("new")) return "remark-new";
-  if (r.includes("clear")) return "remark-clear";
-  if (r.includes("test")) return "remark-test";
-
-  return "remark-default";
-}
 
 export function renderHero() {
 
   const header = document.querySelector(".report-header");
   const body = document.querySelector(".report-body");
 
+  const meta = computedStore.heroMeta || {};
+  const topN = meta.topN || 20;
+
   header.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center;">
       <div>Hero Report</div>
-      <div style="font-size:12px; opacity:0.7;">
-        Top 20 (Latest Month Rank)
+      <div>
+        <span style="font-size:13px;">Top:</span>
+        <select id="heroTopSelector" class="sc-select">
+          <option value="20" ${topN==20?"selected":""}>20</option>
+          <option value="25" ${topN==25?"selected":""}>25</option>
+          <option value="50" ${topN==50?"selected":""}>50</option>
+          <option value="100" ${topN==100?"selected":""}>100</option>
+        </select>
       </div>
     </div>
   `;
 
   let data = computedStore.hero || [];
-
   data = applyGlobalSearch(data, ["style"]);
 
   if (!data.length) {
@@ -38,18 +33,16 @@ export function renderHero() {
     return;
   }
 
-  const months = data[0].months;
+  const months = meta.months;
 
   let html = `
     <table class="report-table">
       <thead>
         <tr>
           <th rowspan="2">Style ID</th>
-          <th colspan="3">Sale</th>
-          <th colspan="3">Rank</th>
-          <th colspan="3">DRR</th>
-          <th rowspan="2">SC</th>
-          <th rowspan="2">Broken</th>
+          <th colspan="${months.length}">Sale</th>
+          <th colspan="${months.length}">Rank</th>
+          <th colspan="${months.length}">DRR</th>
           <th rowspan="2">Remark</th>
         </tr>
         <tr>
@@ -63,8 +56,6 @@ export function renderHero() {
 
   data.forEach(row => {
 
-    const remarkClass = getRemarkClass(row.remark);
-
     html += `
       <tr>
         <td>${row.style}</td>
@@ -73,14 +64,19 @@ export function renderHero() {
         ${months.map(m => `<td>${row.ranks[m]}</td>`).join("")}
         ${months.map(m => `<td>${row.drr[m].toFixed(2)}</td>`).join("")}
 
-        <td>${row.sc}</td>
-        <td>${row.broken}</td>
-        <td class="${remarkClass}">${row.remark || ""}</td>
+        <td class="remark-${row.remarkType}">
+          ${row.remarkText}
+        </td>
       </tr>
     `;
   });
 
   html += "</tbody></table>";
-
   body.innerHTML = html;
+
+  document.getElementById("heroTopSelector")
+    .addEventListener("change", (e) => {
+      buildHero(Number(e.target.value));
+      renderHero();
+    });
 }
