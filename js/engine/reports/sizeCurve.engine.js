@@ -1,4 +1,5 @@
 import { computedStore } from "../../store/computed.store.js";
+import { dataStore } from "../../store/data.store.js";
 
 const SIZE_ORDER = [
   "FS","XS","S","M","L","XL","XXL",
@@ -6,88 +7,70 @@ const SIZE_ORDER = [
   "7XL","8XL","9XL","10XL"
 ];
 
-export function buildSizeCurve(selectedDays = 45) {
+function getSalesMix(styleId) {
 
-  const master = computedStore.master;
-  if (!master) return;
+  const salesRows = dataStore.sales.filter(
+    r => r["Style ID"] === styleId
+  );
+
+  const totalSales = salesRows.reduce(
+    (sum, r) => sum + Number(r.Units || 0), 0
+  );
+
+  const sizeMix = {};
+
+  SIZE_ORDER.forEach(size => sizeMix[size] = 0);
+
+  if (totalSales === 0) return sizeMix;
+
+  salesRows.forEach(r => {
+    const size = r.Size;
+    const units = Number(r.Units || 0);
+
+    if (SIZE_ORDER.includes(size)) {
+      sizeMix[size] += units;
+    }
+  });
+
+  SIZE_ORDER.forEach(size => {
+    sizeMix[size] = sizeMix[size] / totalSales;
+  });
+
+  return sizeMix;
+}
+
+export function buildSizeCurve(viewMode = "pending") {
+
+  const demandData = computedStore.reports?.demand?.rows || [];
 
   const rows = [];
 
-  Object.values(master.styles).forEach(style => {
+  demandData.forEach(styleRow => {
 
-    const totalSales = style.totalSales;
-    const totalStock = style.totalStock;
-    const drr = style.drr;
+    const pending = styleRow.pending || 0;
 
-    const styleDemand = Math.max((drr * selectedDays) - totalStock, 0);
+    if (viewMode === "pending" && pending <= 0) return;
 
-    const sizeSalesMap = {};
-    let allocatedTotal = 0;
+    const sizeMix = getSalesMix(styleRow.styleId);
 
-    // 🔥 CORRECT: use totalUnits
-    Object.values(style.skus).forEach(sku => {
+    const sizeAllocation = {};
 
-      Object.entries(sku.sizes).forEach(([size, data]) => {
-
-        const sizeSales = data.totalUnits || 0;
-
-        sizeSalesMap[size] =
-          (sizeSalesMap[size] || 0) + sizeSales;
-      });
-
+    SIZE_ORDER.forEach(size => {
+      sizeAllocation[size] =
+        Math.round(pending * sizeMix[size]);
     });
-
-    const sizeAllocations = {};
-
-    if (styleDemand > 0 && totalSales > 0) {
-
-      SIZE_ORDER.forEach(size => {
-
-        const sizeSales = sizeSalesMap[size] || 0;
-        const weight = totalSales > 0 ? sizeSales / totalSales : 0;
-
-        const qty = Math.round(styleDemand * weight);
-
-        sizeAllocations[size] = qty;
-        allocatedTotal += qty;
-      });
-
-      // 🔥 Rounding Adjustment
-      const difference = Math.round(styleDemand) - allocatedTotal;
-
-      if (difference !== 0) {
-
-        let maxSize = null;
-        let maxSales = 0;
-
-        SIZE_ORDER.forEach(size => {
-          const sales = sizeSalesMap[size] || 0;
-          if (sales > maxSales) {
-            maxSales = sales;
-            maxSize = size;
-          }
-        });
-
-        if (maxSize) {
-          sizeAllocations[maxSize] += difference;
-        }
-      }
-    }
 
     rows.push({
-      styleId: style.styleId,
-      totalSales,
-      styleDemand: Math.round(styleDemand),
-      sizes: sizeAllocations
+      styleId: styleRow.styleId,
+      styleDemand: pending,
+      sizes: sizeAllocation
     });
-
   });
 
-  // Sort by total sales High → Low
-  rows.sort((a, b) => b.totalSales - a.totalSales);
+  rows.sort((a, b) => b.styleDemand - a.styleDemand);
 
   computedStore.reports.sizeCurve = {
     rows,
-    selectedDays
+    viewMode
   };
 }
