@@ -248,6 +248,26 @@ function flattenDropRisk() {
 }
 
 /* ==============================
+   🛑 Dead Stock
+============================== */
+function flattenDeadStock() {
+
+  const data = computedStore.reports?.deadStock;
+  if (!data) return [];
+
+  return data.rows.map(r => ({
+    Style: r.styleId,
+    Category: r.category,
+    Remark: r.remark,
+    Stock: r.stock,
+    SC: r.sc,
+    Risk: r.risk
+  }));
+}
+
+
+
+/* ==============================
    EXPORT ALL
 ============================== */
 
@@ -263,6 +283,7 @@ export function exportAllReports() {
   XLSX.utils.book_append_sheet(wb, createSheet(flattenDW()), "DW");
   XLSX.utils.book_append_sheet(wb, createSheet(flattenSurge()), "Surge");
   XLSX.utils.book_append_sheet(wb, createSheet(flattenDropRisk()), "DropRisk");
+  XLSX.utils.book_append_sheet(wb, createSheet(flattenDeadStock()), "DeadStock");
 
   const today = new Date();
   const fileName = `Demand_Planning_Engine_${today.getFullYear()}${String(today.getMonth()+1).padStart(2,"0")}${String(today.getDate()).padStart(2,"0")}.xlsx`;

@@ -1,10 +1,11 @@
 import { renderSurge } from "./reports/surge.binding.js";
 import { buildSurge } from "../engine/reports/surge.engine.js";
+
 import { buildDropRisk } from "../engine/reports/dropRisk.engine.js";
 import { renderDropRisk } from "./reports/dropRisk.binding.js";
 
-
-import { computedStore } from "../store/computed.store.js";
+import { renderDeadStock } from "./reports/deadStock.binding.js";
+import { buildDeadStock } from "../engine/reports/deadStock.engine.js";
 
 import { renderDemand } from "./reports/demand.binding.js";
 import { renderOverstock } from "./reports/overstock.binding.js";
@@ -28,56 +29,69 @@ export function renderAllReports() {
 
     tab.addEventListener("click", () => {
 
+      // Remove active from all
       tabs.forEach(t => t.classList.remove("active"));
       tab.classList.add("active");
 
       const tabKey = tab.dataset.tab;
 
-      if (tabKey === "demand") {
-        buildDemand(45);
-        renderDemand();
-      }
+      switch (tabKey) {
 
-      if (tabKey === "overstock") {
-        buildOverstock(90);
-        renderOverstock();
-      }
+        case "demand":
+          buildDemand(45);
+          renderDemand();
+          break;
 
-      if (tabKey === "sizeCurve") {
-        buildSizeCurve(45);
-        renderSizeCurve();
-      }
+        case "overstock":
+          buildOverstock(90);
+          renderOverstock();
+          break;
 
-      if (tabKey === "broken") {
-        buildBroken();
-        renderBroken();
-      }
+        case "sizeCurve":
+          buildSizeCurve(45);
+          renderSizeCurve();
+          break;
 
-      if (tabKey === "hero") {
-        buildHero();
-        renderHero();
-      }
+        case "broken":
+          buildBroken();
+          renderBroken();
+          break;
 
-      if (tabKey === "dw") {
-        buildDW();
-        renderDW();
-      }
+        case "hero":
+          buildHero();
+          renderHero();
+          break;
 
-      if (tabKey === "surge") {
-        buildSurge();
-        renderSurge();
-      }
+        case "dw":
+          buildDW();
+          renderDW();
+          break;
 
-      if (tabKey === "dropRisk") {
-        buildDropRisk();
-        renderDropRisk();
+        case "surge":
+          buildSurge();
+          renderSurge();
+          break;
+
+        case "dropRisk":
+          buildDropRisk();
+          renderDropRisk();
+          break;
+
+        case "deadStock":
+          buildDeadStock("seller");
+          renderDeadStock();
+          break;
+
+        default:
+          console.warn("Unknown tab:", tabKey);
+          break;
       }
 
     });
 
   });
 
-  // default load
+  // Default load
   const defaultTab = document.querySelector('.tab[data-tab="demand"]');
   if (defaultTab) defaultTab.click();
 }
