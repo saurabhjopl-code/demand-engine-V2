@@ -221,3 +221,18 @@
 .remark-default {
   color: #6b7280;
 }
+
+.remark-positive {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.remark-negative {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.remark-mixed {
+  color: #d97706;
+  font-weight: 600;
+}
