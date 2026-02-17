@@ -11,7 +11,6 @@ function getStockByMode(styleId, stockMode) {
       .reduce((sum, r) => sum + Number(r.Units || 0), 0);
   }
 
-  // default total
   return rows.reduce((sum, r) => sum + Number(r.Units || 0), 0);
 }
 
@@ -34,7 +33,6 @@ function getSkuStockByMode(styleId, sku, stockMode) {
 export function buildDemand(days = 45, stockMode = "total") {
 
   const sales = dataStore.sales;
-
   const styleMap = {};
 
   sales.forEach(row => {
@@ -64,11 +62,9 @@ export function buildDemand(days = 45, stockMode = "total") {
   Object.entries(styleMap).forEach(([styleId, data]) => {
 
     const totalSales = data.totalSales;
-
     const totalStock = getStockByMode(styleId, stockMode);
 
     const drr = totalSales / days;
-
     const sc = drr > 0 ? totalStock / drr : 0;
 
     const requiredDemand = drr * days;
@@ -120,10 +116,11 @@ export function buildDemand(days = 45, stockMode = "total") {
       });
     });
 
+    // 🔥 SORT SKU rows by sales DESC
+    skuRows.sort((a, b) => b.totalSales - a.totalSales);
+
     rows.push({
       styleId,
-      category: "",
-      remark: "",
       totalSales,
       totalStock,
       drr,
@@ -135,6 +132,9 @@ export function buildDemand(days = 45, stockMode = "total") {
       skus: skuRows
     });
   });
+
+  // 🔥 SORT STYLE rows by sales DESC
+  rows.sort((a, b) => b.totalSales - a.totalSales);
 
   computedStore.reports = computedStore.reports || {};
   computedStore.reports.demand = {
