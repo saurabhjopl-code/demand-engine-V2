@@ -1,6 +1,20 @@
 import { computedStore } from "../../store/computed.store.js";
 import { applyGlobalSearch } from "../../utils/search.utils.js";
 
+function getRemarkClass(remark) {
+
+  if (!remark) return "";
+
+  const r = remark.toLowerCase();
+
+  if (r.includes("core")) return "remark-core";
+  if (r.includes("new")) return "remark-new";
+  if (r.includes("clear")) return "remark-clear";
+  if (r.includes("test")) return "remark-test";
+
+  return "remark-default";
+}
+
 export function renderHero() {
 
   const header = document.querySelector(".report-header");
@@ -17,7 +31,6 @@ export function renderHero() {
 
   let data = computedStore.hero || [];
 
-  // 🔎 APPLY SEARCH
   data = applyGlobalSearch(data, ["style"]);
 
   if (!data.length) {
@@ -50,6 +63,8 @@ export function renderHero() {
 
   data.forEach(row => {
 
+    const remarkClass = getRemarkClass(row.remark);
+
     html += `
       <tr>
         <td>${row.style}</td>
@@ -60,7 +75,7 @@ export function renderHero() {
 
         <td>${row.sc}</td>
         <td>${row.broken}</td>
-        <td>${row.remark || ""}</td>
+        <td class="${remarkClass}">${row.remark || ""}</td>
       </tr>
     `;
   });
