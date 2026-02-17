@@ -197,3 +197,27 @@
   color: #2563eb;
   font-weight: 600;
 }
+
+.remark-core {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.remark-new {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.remark-clear {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.remark-test {
+  color: #d97706;
+  font-weight: 600;
+}
+
+.remark-default {
+  color: #6b7280;
+}
