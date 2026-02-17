@@ -42,7 +42,7 @@ export function renderAllReports() {
         renderOverstock();
       }
 
-      if (tabName === "size-curve") {
+      if (tabName === "sizecurve") {
         buildSizeCurve(
           computedStore.reports?.sizeCurve?.viewMode || "pending"
         );
@@ -72,4 +72,5 @@ export function renderAllReports() {
   buildDemand(45, "total");
   renderDemand();
 }
+
 
