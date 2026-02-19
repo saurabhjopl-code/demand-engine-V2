@@ -16,6 +16,8 @@
 </head>
 <body>
 
+<!-- ================= HEADER ================= -->
+
 <header class="app-header">
   <div class="header-left">
     <img src="./assets/logo.png" class="logo" />
@@ -30,23 +32,15 @@
   </div>
 </header>
 
+<!-- ================= PROGRESS ================= -->
+
 <section class="progress-section">
   <div class="progress-left">
     <div class="progress-bar">
-      <div class="progress-fill" style="width:100%"></div>
+      <div class="progress-fill"></div>
     </div>
 
-    <div class="progress-stats">
-      Sales: 0 |
-      Stock: 0 |
-      Style Status: 0 |
-      Sale Days: 0 |
-      Size Count: 0 |
-      Production: 0 |
-      Meter Calc: 0 |
-      Location: 0 |
-      X Mark Up: 0
-    </div>
+    <div class="progress-stats"></div>
   </div>
 
   <div class="progress-right">
@@ -54,79 +48,122 @@
   </div>
 </section>
 
-<section class="summary-grid">
+<!-- ================= MAIN LAYOUT ================= -->
 
-  <!-- Row 1 -->
-  <div class="card">
-    <div class="card-title">Sale Details</div>
-    <div class="card-body"></div>
-  </div>
+<div class="main-wrapper">
 
-  <div class="card">
-    <div class="card-title">Current FC Stock</div>
-    <div class="card-body"></div>
-  </div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
 
-  <!-- Row 2 -->
-  <div class="card">
-    <div class="card-title">SC Band Summary</div>
-    <div class="card-body"></div>
-  </div>
+    <div class="sidebar-toggle" id="sidebarToggle">☰</div>
 
-  <div class="card">
-    <div class="card-title">Company Remark-wise Sale</div>
-    <div class="card-body"></div>
-  </div>
-
-  <!-- Row 3 -->
-  <div class="card">
-    <div class="card-title">Size-wise Analysis</div>
-    <div class="card-body"></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Category-wise Sale</div>
-    <div class="card-body"></div>
-  </div>
-
-</section>
-
-<section class="tabs">
-  <button class="tab active" data-tab="demand">📊 Demand</button>
-  <button class="tab" data-tab="overstock">📦 Overstock</button>
-  <button class="tab" data-tab="sizeCurve">📐 Size Curve</button>
-  <button class="tab" data-tab="broken">⚠️ Broken</button>
-  <button class="tab" data-tab="hero">🏆 Hero</button>
-  <button class="tab" data-tab="dw">📈 DW</button>
-  <button class="tab" data-tab="surge">🚀 Surge</button>
-  <button class="tab" data-tab="dropRisk">🛡️ Drop Risk</button>
-  <button class="tab" data-tab="deadStock">🛑 Dead Stock</button>
-</section>
-<section class="report-section">
-  <div class="report-card">
-    <div class="report-header">
-      Demand Report
+    <div class="sidebar-item active" data-tab="dashboard">
+      <span class="icon">📋</span>
+      <span class="label">Dashboard</span>
     </div>
-    <div class="report-body">
-      <!-- Table will render here -->
+
+    <div class="sidebar-item" data-tab="demand">
+      <span class="icon">📊</span>
+      <span class="label">Demand</span>
     </div>
+
+    <div class="sidebar-item" data-tab="overstock">
+      <span class="icon">📦</span>
+      <span class="label">Overstock</span>
+    </div>
+
+    <div class="sidebar-item" data-tab="sizeCurve">
+      <span class="icon">📐</span>
+      <span class="label">Size Curve</span>
+    </div>
+
+    <div class="sidebar-item" data-tab="broken">
+      <span class="icon">⚠️</span>
+      <span class="label">Broken</span>
+    </div>
+
+    <div class="sidebar-item" data-tab="hero">
+      <span class="icon">🏆</span>
+      <span class="label">Hero</span>
+    </div>
+
+    <div class="sidebar-item" data-tab="dw">
+      <span class="icon">📈</span>
+      <span class="label">Demand Weight</span>
+    </div>
+
+    <div class="sidebar-item" data-tab="surge">
+      <span class="icon">🚀</span>
+      <span class="label">Surge</span>
+    </div>
+
+    <div class="sidebar-item" data-tab="dropRisk">
+      <span class="icon">🛡️</span>
+      <span class="label">Drop Risk</span>
+    </div>
+
+    <div class="sidebar-item" data-tab="deadStock">
+      <span class="icon">🛑</span>
+      <span class="label">Dead Stock</span>
+    </div>
+
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- DASHBOARD SUMMARIES -->
+    <section class="summary-grid" id="dashboardSection">
+
+      <div class="card">
+        <div class="card-title">Sale Details</div>
+        <div class="card-body"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Current FC Stock</div>
+        <div class="card-body"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">SC Band Summary</div>
+        <div class="card-body"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Company Remark-wise Sale</div>
+        <div class="card-body"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Size-wise Analysis</div>
+        <div class="card-body"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Category-wise Sale</div>
+        <div class="card-body"></div>
+      </div>
+
+    </section>
+
+    <!-- REPORT AREA -->
+    <section class="report-section" id="reportSection" style="display:none;">
+      <div class="report-card">
+        <div class="report-header"></div>
+        <div class="report-body"></div>
+      </div>
+    </section>
+
   </div>
-</section>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script type="module" src="./js/app/bootstrap.js"></script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
 
 
 

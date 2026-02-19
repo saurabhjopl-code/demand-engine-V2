@@ -23,17 +23,27 @@ import { buildDW } from "../engine/reports/dw.engine.js";
 
 export function renderAllReports() {
 
-  const tabs = document.querySelectorAll(".tab");
+  const sidebarItems = document.querySelectorAll(".sidebar-item");
+  const dashboardSection = document.getElementById("dashboardSection");
+  const reportSection = document.getElementById("reportSection");
 
-  tabs.forEach(tab => {
+  sidebarItems.forEach(item => {
 
-    tab.addEventListener("click", () => {
+    item.addEventListener("click", () => {
 
-      // Remove active from all
-      tabs.forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
+      sidebarItems.forEach(i => i.classList.remove("active"));
+      item.classList.add("active");
 
-      const tabKey = tab.dataset.tab;
+      const tabKey = item.dataset.tab;
+
+      if (tabKey === "dashboard") {
+        dashboardSection.style.display = "grid";
+        reportSection.style.display = "none";
+        return;
+      }
+
+      dashboardSection.style.display = "none";
+      reportSection.style.display = "block";
 
       switch (tabKey) {
 
@@ -84,14 +94,19 @@ export function renderAllReports() {
 
         default:
           console.warn("Unknown tab:", tabKey);
-          break;
       }
 
     });
 
   });
 
-  // Default load
-  const defaultTab = document.querySelector('.tab[data-tab="demand"]');
+  // Default → Dashboard
+  const defaultTab = document.querySelector('.sidebar-item[data-tab="dashboard"]');
   if (defaultTab) defaultTab.click();
+
+  // Sidebar toggle
+  document.getElementById("sidebarToggle")
+    .addEventListener("click", () => {
+      document.querySelector(".sidebar").classList.toggle("collapsed");
+    });
 }

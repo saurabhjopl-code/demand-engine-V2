@@ -12,21 +12,58 @@ import { exportAllReports } from "../utils/export.utils.js";
 
 window.globalSearchTerm = "";
 
+/* =========================
+   GLOBAL SEARCH
+========================= */
+
 function wireGlobalSearch() {
   const input = document.querySelector(".search-input");
+
+  if (!input) return;
+
   input.addEventListener("input", (e) => {
     window.globalSearchTerm = e.target.value;
-    const activeTab = document.querySelector(".tab.active");
-    if (activeTab) activeTab.click();
+
+    const activeItem = document.querySelector(".sidebar-item.active");
+    if (activeItem) activeItem.click();
   });
 }
 
+/* =========================
+   EXPORT BUTTON
+========================= */
+
 function wireExportButton() {
   const btn = document.querySelector(".btn-primary");
+  if (!btn) return;
+
   btn.addEventListener("click", () => {
     exportAllReports();
   });
 }
+
+/* =========================
+   SIDEBAR TOGGLE (FIXED)
+========================= */
+
+function wireSidebarToggle() {
+
+  const sidebar = document.getElementById("sidebar");
+  const toggleBtn = document.getElementById("sidebarToggle");
+
+  if (!sidebar || !toggleBtn) {
+    console.warn("Sidebar elements not found");
+    return;
+  }
+
+  toggleBtn.addEventListener("click", () => {
+    sidebar.classList.toggle("collapsed");
+  });
+}
+
+/* =========================
+   LOAD SHEETS
+========================= */
 
 async function loadAllSheets() {
 
@@ -36,7 +73,6 @@ async function loadAllSheets() {
   let loaded = 0;
   const total = Object.keys(SHEETS).length;
 
-  // Initialize stats structure
   const sheetCounts = {
     sales: 0,
     stock: 0,
@@ -53,44 +89,50 @@ async function loadAllSheets() {
 
     try {
 
-      // Show currently loading sheet
-      progressStats.innerHTML = `Loading: ${key}...`;
+      if (progressStats)
+        progressStats.innerHTML = `Loading: ${key}...`;
 
       const text = await fetchCSV(SHEETS[key]);
       const parsed = parseCSV(text);
 
       dataStore[key] = parsed;
-
       sheetCounts[key] = parsed.length;
 
       loaded++;
 
       const percent = Math.round((loaded / total) * 100);
 
-      progressFill.style.width = `${percent}%`;
-      progressFill.textContent = `${percent}%`;
+      if (progressFill) {
+        progressFill.style.width = `${percent}%`;
+        progressFill.textContent = `${percent}%`;
+      }
 
-      // Update row counts LIVE
-      progressStats.innerHTML = `
-        Sales: ${sheetCounts.sales} |
-        Stock: ${sheetCounts.stock} |
-        Style Status: ${sheetCounts.styleStatus} |
-        Sale Days: ${sheetCounts.saleDays} |
-        Size Count: ${sheetCounts.sizeCount} |
-        Production: ${sheetCounts.production} |
-        Meter Calc: ${sheetCounts.meterCalc} |
-        Location: ${sheetCounts.location} |
-        X Mark Up: ${sheetCounts.xMarkup}
-      `;
+      if (progressStats) {
+        progressStats.innerHTML = `
+          Sales: ${sheetCounts.sales} |
+          Stock: ${sheetCounts.stock} |
+          Style Status: ${sheetCounts.styleStatus} |
+          Sale Days: ${sheetCounts.saleDays} |
+          Size Count: ${sheetCounts.sizeCount} |
+          Production: ${sheetCounts.production} |
+          Meter Calc: ${sheetCounts.meterCalc} |
+          Location: ${sheetCounts.location} |
+          X Mark Up: ${sheetCounts.xMarkup}
+        `;
+      }
 
     } catch (err) {
       console.error("Sheet failed:", key, err);
     }
   }
 
-  // Smooth finish
-  progressStats.innerHTML += ` | ✔ All Sheets Loaded`;
+  if (progressStats)
+    progressStats.innerHTML += ` | ✔ All Sheets Loaded`;
 }
+
+/* =========================
+   BOOTSTRAP
+========================= */
 
 async function bootstrap() {
 
@@ -105,8 +147,10 @@ async function bootstrap() {
 
     wireGlobalSearch();
     wireExportButton();
+    wireSidebarToggle();
 
     console.log("App Ready");
+
   } catch (err) {
     console.error("Bootstrap failed:", err);
   }
