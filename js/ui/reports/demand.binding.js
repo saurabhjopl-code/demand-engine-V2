@@ -71,9 +71,9 @@ export function renderDemand() {
           <th>Stock</th>
           <th>DRR</th>
           <th>SC</th>
-          <th>Req Demand</th>
           <th>Direct Demand</th>
-          <th>Under Production</th>
+          <th>Required Demand</th>
+          <th>Under Stitching</th>
           <th>Pending</th>
         </tr>
       </thead>
@@ -170,4 +170,5 @@ export function renderDemand() {
       renderDemand();
     });
 }
+
 
